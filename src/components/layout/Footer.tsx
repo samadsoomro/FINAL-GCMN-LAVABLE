@@ -12,7 +12,7 @@ const Footer: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
             {/* About Section */}
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold">GCMN Library</h3>
+              <h3 className="text-xl font-semibold">GCFM Library</h3>
               <p className="text-white/80 text-sm leading-relaxed">
                 Gov. College For Men Nazimabad Library is committed to providing
                 quality educational resources and fostering a culture of learning
@@ -92,7 +92,7 @@ const Footer: React.FC = () => {
                   <span>Sun: Closed</span>
                 </li>
               </ul>
-              
+
               <h4 className="text-lg font-semibold pt-4">Resources</h4>
               <ul className="space-y-2">
                 {[
@@ -126,10 +126,10 @@ const Footer: React.FC = () => {
                 </li>
                 <li className="flex items-center gap-3 text-white/80 text-sm">
                   <Mail size={18} className="flex-shrink-0" />
-                  <span>library@gcmn.edu.pk</span>
+                  <span>library@gcfm.edu.pk</span>
                 </li>
               </ul>
-              
+
               <a
                 href="https://maps.app.goo.gl/yrPZQ5gmXNzkBEAQ7"
                 target="_blank"
@@ -149,7 +149,7 @@ const Footer: React.FC = () => {
         <div className="container">
           <div className="text-center space-y-3">
             <p className="text-white/90 text-sm font-medium">
-              Made by the Computer Science Department of GCMN
+              Made by the Computer Science Department of GCFM
             </p>
             <p className="text-white/70 text-xs">
               Contributors: Sir Ubaid Anwar (Head of Computer Department), Abdul Samad, Muhammad Salman Bhatti – Class 12 (CS Field)
@@ -163,7 +163,7 @@ const Footer: React.FC = () => {
         <div className="container">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-white/70 text-sm text-center md:text-left">
-              © {currentYear} GCMN Library. All rights reserved.
+              © {currentYear} GCFM Library. All rights reserved.
             </p>
             <p className="text-white/70 text-sm text-center md:text-right">
               Empowering Education Since 1953

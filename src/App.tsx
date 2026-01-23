@@ -36,6 +36,9 @@ import AdminLibraryCards from "@/pages/admin/LibraryCards";
 import AdminDonations from "@/pages/admin/Donations";
 import AdminRegisteredUsers from "@/pages/admin/RegisteredUsers";
 import BooksDetails from "@/pages/admin/BooksDetails";
+import History from "@/pages/History";
+import PrincipalMessage from "@/pages/PrincipalMessage";
+import Faculty from "@/pages/Faculty";
 import NotFound from "@/pages/NotFound";
 
 const AnimatedRoutes = () => {
@@ -55,6 +58,9 @@ const AnimatedRoutes = () => {
         <Route path="/library-card" element={<PageTransition><LibraryCard /></PageTransition>} />
         <Route path="/donate" element={<PageTransition><Donate /></PageTransition>} />
         <Route path="/events" element={<PageTransition><Events /></PageTransition>} />
+        <Route path="/history" element={<PageTransition><History /></PageTransition>} />
+        <Route path="/principal-message" element={<PageTransition><PrincipalMessage /></PageTransition>} />
+        <Route path="/faculty" element={<PageTransition><Faculty /></PageTransition>} />
         <Route path="/notifications" element={<PageTransition><NotificationsPage /></PageTransition>} />
         <Route path="/blog" element={<PageTransition><Blog /></PageTransition>} />
         <Route path="/blog/:slug" element={<PageTransition><BlogPost /></PageTransition>} />

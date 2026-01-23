@@ -57,7 +57,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
             >
               <motion.div
                 className="w-32 h-32 md:w-40 md:h-40 rounded-2xl bg-white shadow-2xl flex items-center justify-center overflow-hidden"
-                animate={{ 
+                animate={{
                   boxShadow: [
                     '0 0 20px rgba(255,255,255,0.3)',
                     '0 0 40px rgba(255,255,255,0.5)',
@@ -72,7 +72,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                   className="w-28 h-28 md:w-36 md:h-36 object-contain"
                 />
               </motion.div>
-              
+
               {/* Sparkles around logo */}
               <motion.div
                 className="absolute -top-2 -right-2 text-pakistan-gold"
@@ -100,7 +100,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.5, delay: 1.8 }}
             >
-              GCMN Library
+              GCFM
             </motion.h1>
 
             {/* Subtitle */}
@@ -110,7 +110,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.5, delay: 2 }}
             >
-              Gov. College For Men Nazimabad
+              Gov. College Formen Nazimabad
             </motion.p>
 
             {/* Loading Indicator */}

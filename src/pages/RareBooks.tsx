@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Archive, Eye, Calendar, BookOpen, Shield, Search, X } from 'lucide-react';
+import { Archive, Eye, Shield, Search, X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
+
+// Configure PDF worker
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url,
+).toString();
 
 const RareBooks: React.FC = () => {
   const [selectedBook, setSelectedBook] = useState<any | null>(null);
@@ -10,29 +19,26 @@ const RareBooks: React.FC = () => {
   const [books, setBooks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Security restrictions for Rare Books
-    const preventDefaults = (e: any) => {
-      e.preventDefault();
-    };
+  // PDF State
+  const [numPages, setNumPages] = useState<number | null>(null);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [scale, setScale] = useState(1.0);
+  const [rotation, setRotation] = useState(0);
 
+  useEffect(() => {
+    // Security restrictions
+    const preventDefaults = (e: any) => e.preventDefault();
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Disable Ctrl+S, Ctrl+P, Ctrl+Shift+I, Ctrl+U
-      if (
-        (e.ctrlKey && (e.key === 's' || e.key === 'p' || e.key === 'u' || e.key === 'i')) ||
-        (e.ctrlKey && e.shiftKey && e.key === 'I')
-      ) {
+      if ((e.ctrlKey && (e.key === 's' || e.key === 'p' || e.key === 'u')) || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
         e.preventDefault();
       }
     };
 
     document.addEventListener('contextmenu', preventDefaults);
-    document.addEventListener('selectstart', preventDefaults);
     document.addEventListener('keydown', handleKeyDown);
 
     return () => {
       document.removeEventListener('contextmenu', preventDefaults);
-      document.removeEventListener('selectstart', preventDefaults);
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
@@ -56,6 +62,19 @@ const RareBooks: React.FC = () => {
     book.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
+    setNumPages(numPages);
+    setPageNumber(1);
+  }
+
+  const changePage = (offset: number) => {
+    setPageNumber(prev => Math.min(Math.max(1, prev + offset), numPages || 1));
+  };
+
+  const handleZoom = (delta: number) => {
+    setScale(prev => Math.min(Math.max(0.5, prev + delta), 2.5));
+  };
+
   return (
     <motion.div
       className="min-h-screen pt-20"
@@ -74,22 +93,10 @@ const RareBooks: React.FC = () => {
             <Archive size={18} />
             <span>Digital Archive</span>
           </motion.div>
-          <motion.h1
-            className="text-3xl lg:text-4xl font-bold mb-4"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-          >
-            Rare Books Collection
-          </motion.h1>
-          <motion.p
-            className="text-lg text-white/90 max-w-2xl mx-auto"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
+          <h1 className="text-3xl lg:text-4xl font-bold mb-4">Rare Books Collection</h1>
+          <p className="text-lg text-white/90 max-w-2xl mx-auto">
             Explore our digital archive of rare and historical books with secure viewing technology
-          </motion.p>
+          </p>
         </div>
       </div>
 
@@ -97,21 +104,15 @@ const RareBooks: React.FC = () => {
       <div className="py-12 lg:py-16">
         <div className="container">
           {/* Security Notice */}
-          <motion.div
-            className="flex items-start gap-4 p-6 bg-primary/5 border-2 border-primary rounded-xl mb-8"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
+          <div className="flex items-start gap-4 p-6 bg-primary/5 border-2 border-primary rounded-xl mb-8">
             <Shield size={24} className="text-primary flex-shrink-0 mt-1" />
             <div>
               <h3 className="font-semibold text-foreground mb-1">Secure Viewing</h3>
               <p className="text-sm text-muted-foreground">
-                These rare books are available for viewing only. Screenshots and downloads are restricted
-                to preserve our valuable collection. Please handle with respect.
+                These rare books are available for viewing only. Screenshots and downloads are restricted.
               </p>
             </div>
-          </motion.div>
+          </div>
 
           {/* Search */}
           <div className="relative mb-8">
@@ -134,8 +135,11 @@ const RareBooks: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 * index }}
-                whileHover={{ y: -5 }}
-                onClick={() => setSelectedBook(book)}
+                onClick={() => {
+                  setSelectedBook(book);
+                  setPageNumber(1);
+                  setScale(1.0);
+                }}
               >
                 <div className="relative h-64 overflow-hidden bg-muted flex items-center justify-center">
                   {book.coverImage ? (
@@ -164,14 +168,6 @@ const RareBooks: React.FC = () => {
               </motion.div>
             ))}
           </div>
-
-          {filteredBooks.length === 0 && (
-            <div className="text-center py-16">
-              <Archive size={48} className="mx-auto text-muted-foreground mb-4" />
-              <h4 className="text-lg font-semibold text-foreground mb-2">No Books Found</h4>
-              <p className="text-muted-foreground">Try a different search term</p>
-            </div>
-          )}
         </div>
       </div>
 
@@ -179,78 +175,114 @@ const RareBooks: React.FC = () => {
       <AnimatePresence>
         {selectedBook && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelectedBook(null)}
           >
             <motion.div
-              className="bg-card rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-card rounded-xl max-w-4xl w-full h-[90vh] flex flex-col overflow-hidden"
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="relative h-64 bg-primary/10 flex items-center justify-center overflow-hidden">
-                {selectedBook.coverImage ? (
-                  <img src={selectedBook.coverImage} alt={selectedBook.title} className="w-full h-full object-cover" />
-                ) : (
-                  <Archive size={64} className="text-primary/20" />
-                )}
-                <button
-                  className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center bg-black/50 rounded-full text-white hover:bg-black/70 transition-colors"
-                  onClick={() => setSelectedBook(null)}
-                >
-                  <X size={20} />
-                </button>
-              </div>
-              <div className="p-6 lg:p-8">
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
-                    {selectedBook.category}
-                  </span>
-                </div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">{selectedBook.title}</h2>
-                <p className="text-muted-foreground mb-6 leading-relaxed">{selectedBook.description}</p>
-                
-                <div className="p-4 bg-secondary rounded-lg mb-6 text-center border-2 border-dashed border-primary/20 select-none">
-                  <p className="text-sm text-muted-foreground">Digital Preview Mode</p>
-                  <p className="text-xs text-muted-foreground italic">Protected content: Read-only access</p>
+              {/* Toolbar - Optimized for Mobile */}
+              <div className="p-3 border-b flex items-center justify-between bg-secondary shrink-0 gap-2">
+                <div className="flex items-center gap-2 overflow-hidden flex-1">
+                  <Button variant="ghost" size="icon" className="md:hidden shrink-0 h-8 w-8 -ml-1 text-muted-foreground" onClick={() => setSelectedBook(null)}>
+                    <X size={20} />
+                  </Button>
+                  <h2 className="font-bold text-sm md:text-lg line-clamp-1 truncate">{selectedBook.title}</h2>
+                  <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground whitespace-nowrap px-2">
+                    <span>Page {pageNumber} of {numPages || '--'}</span>
+                  </div>
                 </div>
 
-                <div 
-                  className="relative w-full aspect-[3/4] bg-muted rounded-lg overflow-hidden border shadow-inner select-none"
-                  onContextMenu={(e) => e.preventDefault()}
-                >
-                  {selectedBook.id ? (
-                    <div className="w-full h-full relative group/viewer">
-                      <div className="flex flex-col h-full">
-                        <embed
-                          src={`/api/rare-books/stream/${selectedBook.id}#toolbar=0&navpanes=0&scrollbar=1`}
-                          type="application/pdf"
-                          className="w-full flex-1 border-0"
-                          style={{ userSelect: 'none' }}
-                        />
-                        <div className="bg-muted p-2 text-center text-xs text-muted-foreground border-t">
-                          View Only Mode • GCMN Library Archive
-                        </div>
-                      </div>
-                      
-                      {/* Security Watermark - Reduced opacity and made pointer-events-none to ensure scroll works */}
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] rotate-45 select-none">
-                        <div className="text-4xl font-bold text-black whitespace-nowrap">
-                          GCMN LIBRARY ARCHIVE • PROTECTED CONTENT
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                      <Archive size={48} className="mb-2 opacity-20" />
-                      <p>Preview not available</p>
-                    </div>
-                  )}
+                <div className="flex items-center gap-1 md:gap-2 shrink-0">
+                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => changePage(-1)} disabled={pageNumber <= 1}>
+                    <ChevronLeft size={16} />
+                  </Button>
+                  <span className="sm:hidden text-xs font-medium w-6 text-center">{pageNumber}</span>
+                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => changePage(1)} disabled={pageNumber >= (numPages || 1)}>
+                    <ChevronRight size={16} />
+                  </Button>
+
+                  <div className="hidden md:flex items-center gap-1">
+                    <div className="w-px h-6 bg-border mx-2" />
+                    <Button variant="outline" size="icon" onClick={() => handleZoom(-0.2)}>
+                      <ZoomOut size={18} />
+                    </Button>
+                    <Button variant="outline" size="icon" onClick={() => handleZoom(0.2)}>
+                      <ZoomIn size={18} />
+                    </Button>
+                    <Button variant="outline" size="icon" onClick={() => setRotation(r => r + 90)}>
+                      <RotateCw size={18} />
+                    </Button>
+                  </div>
+
+                  <div className="w-px h-6 bg-border mx-2 hidden md:block" />
+
+                  <Button variant="ghost" size="icon" className="hidden md:flex" onClick={() => setSelectedBook(null)}>
+                    <X size={24} />
+                  </Button>
                 </div>
+              </div>
+
+              {/* Viewer Area */}
+              <div className="flex-1 overflow-auto bg-neutral-900 relative flex justify-center p-4 select-none"
+                onContextMenu={(e) => e.preventDefault()}>
+
+                <Document
+                  file={`/api/rare-books/stream/${selectedBook.id}`}
+                  onLoadSuccess={onDocumentLoadSuccess}
+                  loading={
+                    <div className="flex flex-col items-center justify-center p-12 text-white">
+                      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-white mb-4"></div>
+                      <p>Loading Secure Document...</p>
+                    </div>
+                  }
+                  error={
+                    <div className="flex flex-col items-center justify-center p-12 text-white/70">
+                      <Shield size={48} className="mb-4" />
+                      <p>Failed to load protected document.</p>
+                    </div>
+                  }
+                  className="shadow-2xl"
+                >
+                  <div className="relative">
+                    <Page
+                      pageNumber={pageNumber}
+                      scale={scale}
+                      rotate={rotation}
+                      renderTextLayer={false}
+                      renderAnnotationLayer={false}
+                      className="border shadow-lg"
+                    />
+
+                    {/* Watermark Overlay */}
+                    <div className="absolute inset-0 z-50 pointer-events-none flex items-center justify-center overflow-hidden">
+                      <div className="rotate-45 transform opacity-10 select-none">
+                        <p className="text-[8vw] font-black text-black leading-none text-center">
+                          GCFM LIBRARY<br />ARCHIVE
+                        </p>
+                      </div>
+                      {/* Multiple small watermarks grid */}
+                      <div className="absolute inset-0 opacity-5 grid grid-cols-3 grid-rows-3 gap-8 p-8 rotate-12">
+                        {Array.from({ length: 9 }).map((_, i) => (
+                          <div key={i} className="flex items-center justify-center">
+                            <span className="font-bold text-2xl text-black">GCFM ARCHIVE</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </Document>
+              </div>
+
+              <div className="bg-primary text-primary-foreground text-center text-xs py-1">
+                Confidential • Do Not Distribute • GCFM Library Archive
               </div>
             </motion.div>
           </motion.div>

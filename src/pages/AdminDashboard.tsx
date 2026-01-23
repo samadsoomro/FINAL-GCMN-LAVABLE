@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Users, BookOpen, CreditCard, LogOut, Mail, Gift, Trash2, CheckCircle, Download, BarChart3, RefreshCw, FileText, Archive, Book, Eye, Shield, Calendar, ArrowRight, MoreVertical, Clock, Bell, PenTool } from 'lucide-react';
+import { Users, BookOpen, CreditCard, LogOut, Mail, Gift, Trash2, CheckCircle, Download, BarChart3, RefreshCw, FileText, Archive, Book, Eye, Shield, Calendar, ArrowRight, MoreVertical, Clock, Bell, PenTool, User } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,8 @@ import { jsPDF } from 'jspdf';
 import Books from './admin/BooksDetails';
 import Notifications from './admin/Notifications';
 import AdminBlog from './admin/Blog';
+import AdminPrincipal from './admin/AdminPrincipal';
+import AdminFaculty from './admin/AdminFaculty';
 
 const AdminDashboard: React.FC = () => {
   const [activeModule, setActiveModule] = useState('messages');
@@ -878,6 +880,16 @@ const AdminDashboard: React.FC = () => {
     { id: 'rare-books', label: 'Rare Books', icon: Archive, count: rareBooks?.length || 0 },
     { id: 'books-details', label: 'Books Details', icon: Book, count: booksDetails?.length || 0 },
     { id: 'events', label: 'Events', icon: Archive, count: events?.length || 0 },
+    { id: 'principal', label: 'Principal', icon: User, count: 0 },
+    { id: 'faculty', label: 'Faculty', icon: Users, count: 0 },
+    { id: 'books', label: 'Borrowed Books', icon: BookOpen, count: borrowedBooks.length },
+    { id: 'library-cards', label: 'Library Cards', icon: CreditCard, count: libraryCards.length },
+    { id: 'users', label: 'Users', icon: Users, count: users.length },
+    { id: 'donations', label: 'Donations', icon: Gift, count: donations.length },
+    { id: 'notes', label: 'Notes', icon: FileText, count: notes.length },
+    { id: 'rare-books', label: 'Rare Books', icon: Archive, count: rareBooks?.length || 0 },
+    { id: 'books-details', label: 'Books Details', icon: Book, count: booksDetails?.length || 0 },
+    { id: 'events', label: 'Events', icon: Archive, count: events?.length || 0 },
     { id: 'blog', label: 'Blog', icon: PenTool, count: 0 },
     { id: 'notifications', label: 'Notifications', icon: Bell, count: 0 },
   ];
@@ -1428,6 +1440,21 @@ const AdminDashboard: React.FC = () => {
                   </div>
                 </Card>
               )}
+            </div>
+          )}
+
+
+          {/* Principal Module */}
+          {activeModule === 'principal' && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <AdminPrincipal />
+            </div>
+          )}
+
+          {/* Faculty Module */}
+          {activeModule === 'faculty' && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <AdminFaculty />
             </div>
           )}
 

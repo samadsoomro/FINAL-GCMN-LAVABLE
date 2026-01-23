@@ -138,40 +138,6 @@ export const rareBooks = pgTable("rare_books", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
-export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
-export const insertProfileSchema = createInsertSchema(profiles).omit({ id: true, createdAt: true, updatedAt: true });
-export const insertContactMessageSchema = createInsertSchema(contactMessages).omit({ id: true, createdAt: true, isSeen: true });
-export const insertBookBorrowSchema = createInsertSchema(bookBorrows).omit({ id: true, createdAt: true, borrowDate: true, returnDate: true, status: true });
-export const insertLibraryCardApplicationSchema = createInsertSchema(libraryCardApplications).omit({ id: true, createdAt: true, updatedAt: true, status: true, cardNumber: true, studentId: true, issueDate: true, validThrough: true });
-export const insertDonationSchema = createInsertSchema(donations).omit({ id: true, createdAt: true });
-export const insertStudentSchema = createInsertSchema(students).omit({ id: true, createdAt: true });
-export const insertNonStudentSchema = createInsertSchema(nonStudents).omit({ id: true, createdAt: true });
-export const insertUserRoleSchema = createInsertSchema(userRoles).omit({ id: true, createdAt: true });
-export const insertBookDetailSchema = createInsertSchema(books).omit({ id: true, createdAt: true, updatedAt: true });
-export const insertRareBookSchema = createInsertSchema(rareBooks).omit({ id: true, createdAt: true });
-
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type InsertProfile = z.infer<typeof insertProfileSchema>;
-export type InsertContactMessage = z.infer<typeof insertContactMessageSchema>;
-export type InsertBookBorrow = z.infer<typeof insertBookBorrowSchema>;
-export type InsertLibraryCardApplication = z.infer<typeof insertLibraryCardApplicationSchema>;
-export type InsertDonation = z.infer<typeof insertDonationSchema>;
-export type InsertStudent = z.infer<typeof insertStudentSchema>;
-export type InsertNonStudent = z.infer<typeof insertNonStudentSchema>;
-export type InsertUserRole = z.infer<typeof insertUserRoleSchema>;
-export type InsertBookDetail = z.infer<typeof insertBookDetailSchema>;
-export type InsertRareBook = z.infer<typeof insertRareBookSchema>;
-
-export type User = typeof users.$inferSelect;
-export type Profile = typeof profiles.$inferSelect;
-export type ContactMessage = typeof contactMessages.$inferSelect;
-export type BookBorrow = typeof bookBorrows.$inferSelect;
-export type LibraryCardApplication = typeof libraryCardApplications.$inferSelect;
-export type Donation = typeof donations.$inferSelect;
-export type Student = typeof students.$inferSelect;
-export type NonStudent = typeof nonStudents.$inferSelect;
-export type UserRole = typeof userRoles.$inferSelect;
-export type BookDetail = typeof books.$inferSelect;
 export const events = pgTable("events", {
   id: uuid("id").defaultRandom().primaryKey(),
   title: text("title").notNull(),
@@ -192,14 +158,6 @@ export const notifications = pgTable("notifications", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
-export const insertEventSchema = createInsertSchema(events).omit({ id: true, createdAt: true, updatedAt: true });
-export type InsertEvent = z.infer<typeof insertEventSchema>;
-export type Event = typeof events.$inferSelect;
-
-export const insertNotificationSchema = createInsertSchema(notifications).omit({ id: true, createdAt: true });
-export type InsertNotification = z.infer<typeof insertNotificationSchema>;
-export type Notification = typeof notifications.$inferSelect;
-
 export const notes = pgTable("notes", {
   id: uuid("id").defaultRandom().primaryKey(),
   title: text("title").notNull(),
@@ -211,9 +169,6 @@ export const notes = pgTable("notes", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
-
-export const insertNoteSchema = createInsertSchema(notes).omit({ id: true, createdAt: true, updatedAt: true });
-export type InsertNote = z.infer<typeof insertNoteSchema>;
 
 export const blogPosts = pgTable("blog_posts", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -228,7 +183,75 @@ export const blogPosts = pgTable("blog_posts", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
-export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({ id: true, createdAt: true, updatedAt: true });
-export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
-export type BlogPost = typeof blogPosts.$inferSelect;
+// New Tables for About Menu Structure
+export const principal = pgTable("principal", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  imageUrl: text("image_url"),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
 
+export const facultyStaff = pgTable("faculty_staff", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  designation: text("designation").notNull(),
+  description: text("description"),
+  imageUrl: text("image_url"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
+export const insertProfileSchema = createInsertSchema(profiles).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertContactMessageSchema = createInsertSchema(contactMessages).omit({ id: true, createdAt: true, isSeen: true });
+export const insertBookBorrowSchema = createInsertSchema(bookBorrows).omit({ id: true, createdAt: true, borrowDate: true, returnDate: true, status: true });
+export const insertLibraryCardApplicationSchema = createInsertSchema(libraryCardApplications).omit({ id: true, createdAt: true, updatedAt: true, status: true, cardNumber: true, studentId: true, issueDate: true, validThrough: true });
+export const insertDonationSchema = createInsertSchema(donations).omit({ id: true, createdAt: true });
+export const insertStudentSchema = createInsertSchema(students).omit({ id: true, createdAt: true });
+export const insertNonStudentSchema = createInsertSchema(nonStudents).omit({ id: true, createdAt: true });
+export const insertUserRoleSchema = createInsertSchema(userRoles).omit({ id: true, createdAt: true });
+export const insertBookDetailSchema = createInsertSchema(books).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertRareBookSchema = createInsertSchema(rareBooks).omit({ id: true, createdAt: true });
+export const insertEventSchema = createInsertSchema(events).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertNotificationSchema = createInsertSchema(notifications).omit({ id: true, createdAt: true });
+export const insertNoteSchema = createInsertSchema(notes).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertPrincipalSchema = createInsertSchema(principal).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertFacultyStaffSchema = createInsertSchema(facultyStaff).omit({ id: true, createdAt: true, updatedAt: true });
+
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type InsertProfile = z.infer<typeof insertProfileSchema>;
+export type InsertContactMessage = z.infer<typeof insertContactMessageSchema>;
+export type InsertBookBorrow = z.infer<typeof insertBookBorrowSchema>;
+export type InsertLibraryCardApplication = z.infer<typeof insertLibraryCardApplicationSchema>;
+export type InsertDonation = z.infer<typeof insertDonationSchema>;
+export type InsertStudent = z.infer<typeof insertStudentSchema>;
+export type InsertNonStudent = z.infer<typeof insertNonStudentSchema>;
+export type InsertUserRole = z.infer<typeof insertUserRoleSchema>;
+export type InsertBookDetail = z.infer<typeof insertBookDetailSchema>;
+export type InsertRareBook = z.infer<typeof insertRareBookSchema>;
+export type InsertEvent = z.infer<typeof insertEventSchema>;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type InsertNote = z.infer<typeof insertNoteSchema>;
+export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
+export type InsertPrincipal = z.infer<typeof insertPrincipalSchema>;
+export type InsertFacultyStaff = z.infer<typeof insertFacultyStaffSchema>;
+
+export type User = typeof users.$inferSelect;
+export type Profile = typeof profiles.$inferSelect;
+export type ContactMessage = typeof contactMessages.$inferSelect;
+export type BookBorrow = typeof bookBorrows.$inferSelect;
+export type LibraryCardApplication = typeof libraryCardApplications.$inferSelect;
+export type Donation = typeof donations.$inferSelect;
+export type Student = typeof students.$inferSelect;
+export type NonStudent = typeof nonStudents.$inferSelect;
+export type UserRole = typeof userRoles.$inferSelect;
+export type BookDetail = typeof books.$inferSelect;
+export type Event = typeof events.$inferSelect;
+export type Notification = typeof notifications.$inferSelect;
+export type Note = typeof notes.$inferSelect;
+export type BlogPost = typeof blogPosts.$inferSelect;
+export type Principal = typeof principal.$inferSelect;
+export type FacultyStaff = typeof facultyStaff.$inferSelect;

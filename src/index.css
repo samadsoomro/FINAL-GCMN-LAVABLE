@@ -14,36 +14,48 @@
     --pakistan-green-light: 151 84% 22%;
     --pakistan-green-lighter: 150 75% 30%;
     --pakistan-green-dark: 147 100% 9%;
-    
-    /* Base Colors - Soft White */
-    --background: 210 20% 98%; /* #F9FAFB */
-    --foreground: 220 20% 15%; /* #1F2937 */
 
-    --card: 0 0% 100%; /* #FFFFFF - Pure white glossy */
-    --card-foreground: 220 20% 15%; /* #1F2937 */
+    /* Base Colors - Soft White */
+    --background: 210 20% 98%;
+    /* #F9FAFB */
+    --foreground: 220 20% 15%;
+    /* #1F2937 */
+
+    --card: 0 0% 100%;
+    /* #FFFFFF - Pure white glossy */
+    --card-foreground: 220 20% 15%;
+    /* #1F2937 */
 
     --popover: 0 0% 100%;
     --popover-foreground: 220 20% 15%;
 
     /* Primary - Pakistan Green accent for buttons */
-    --primary: 120 100% 20%; /* #006600 */
+    --primary: 120 100% 20%;
+    /* #006600 */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 100%; /* #FFFFFF */
+    --secondary: 0 0% 100%;
+    /* #FFFFFF */
     --secondary-foreground: 220 20% 15%;
 
-    --muted: 210 20% 98%; /* #F9FAFB */
-    --muted-foreground: 215 16% 47%; /* #4B5563 */
+    --muted: 210 20% 98%;
+    /* #F9FAFB */
+    --muted-foreground: 215 16% 47%;
+    /* #4B5563 */
 
-    --accent: 151 84% 22%; /* Pakistan Green as accent */
+    --accent: 151 84% 22%;
+    /* Pakistan Green as accent */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%; /* #E5E7EB */
-    --input: 0 0% 100%; /* #FFFFFF */
-    --input-border: 220 13% 83%; /* #D1D5DB */
+    --border: 220 13% 91%;
+    /* #E5E7EB */
+    --input: 0 0% 100%;
+    /* #FFFFFF */
+    --input-border: 220 13% 83%;
+    /* #D1D5DB */
     --ring: 120 100% 20%;
 
     --radius: 0.5rem;
@@ -52,21 +64,24 @@
     --success: 151 75% 35%;
     --warning: 43 74% 52%;
     --error: 0 84% 60%;
-    
+
     /* Text Colors - Dark for contrast */
     --text-white: 0 0% 100%;
-    --text-primary: 220 20% 15%; /* #1F2937 */
-    --text-secondary: 215 16% 47%; /* #4B5563 */
+    --text-primary: 220 20% 15%;
+    /* #1F2937 */
+    --text-secondary: 215 16% 47%;
+    /* #4B5563 */
     --text-tertiary: 215 14% 60%;
-    
+
     /* Background Colors */
     --bg-primary: 0 0% 100%;
-    --bg-secondary: 210 20% 98%; /* #F9FAFB */
+    --bg-secondary: 210 20% 98%;
+    /* #F9FAFB */
     --bg-tertiary: 210 17% 95%;
-    
+
     /* Shine Effects */
     --shine-gradient: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 20% 98%) 100%);
-    
+
     /* Shadows - Soft and subtle */
     --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.03);
     --shadow-md: 0 2px 8px hsl(0 0% 0% / 0.04);
@@ -74,7 +89,7 @@
     --shadow-xl: 0 8px 24px hsl(0 0% 0% / 0.08);
     --shadow-card: 0 2px 8px hsl(0 0% 0% / 0.04);
     --shadow-button: 0 2px 6px hsl(120 100% 20% / 0.25);
-    
+
     /* Spacing */
     --space-xs: 0.25rem;
     --space-sm: 0.5rem;
@@ -83,12 +98,12 @@
     --space-xl: 2rem;
     --space-2xl: 3rem;
     --space-3xl: 4rem;
-    
+
     /* Transitions */
     --transition-fast: 150ms ease;
     --transition-base: 200ms ease;
     --transition-slow: 300ms ease;
-    
+
     /* Z-index */
     --z-dropdown: 100;
     --z-sticky: 200;
@@ -116,7 +131,8 @@
     --popover: 220 17% 12%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 120 100% 25%; /* Slightly brighter for dark mode */
+    --primary: 120 100% 25%;
+    /* Slightly brighter for dark mode */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 17% 15%;
@@ -135,15 +151,15 @@
     --input: 220 17% 15%;
     --input-border: 220 17% 25%;
     --ring: 120 100% 25%;
-    
+
     /* Extended Colors - Dark Mode */
     --bg-primary: 220 17% 10%;
     --bg-secondary: 220 17% 12%;
     --bg-tertiary: 220 17% 15%;
-    
+
     --shadow-card: 0 2px 8px hsl(0 0% 0% / 0.2);
     --shadow-button: 0 2px 6px hsl(120 100% 25% / 0.3);
-    
+
     --sidebar-background: 220 17% 10%;
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 120 100% 25%;
@@ -179,64 +195,64 @@
   .container {
     @apply mx-auto px-4 max-w-7xl;
   }
-  
+
   /* Shine Background Effect */
   .shine-bg {
     background: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 20% 98%) 100%);
   }
-  
+
   .pakistan-bg {
     @apply relative overflow-hidden;
     background: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--bg-secondary)) 100%);
   }
-  
+
   .gradient-primary {
     background: linear-gradient(135deg, hsl(120 100% 20%) 0%, hsl(120 100% 30%) 100%);
   }
-  
+
   .gradient-dark {
     background: linear-gradient(135deg, hsl(220 17% 10%) 0%, hsl(220 17% 15%) 100%);
   }
-  
+
   .gradient-accent {
     background: linear-gradient(135deg, hsl(151 84% 22%) 0%, hsl(150 75% 30%) 100%);
   }
-  
+
   .text-gradient {
     @apply bg-clip-text text-transparent;
     background-image: linear-gradient(135deg, hsl(120 100% 20%) 0%, hsl(120 100% 30%) 100%);
   }
-  
+
   /* Card Shine Effect */
   .card-shine {
     @apply bg-card;
     box-shadow: var(--shadow-card);
     transition: box-shadow var(--transition-base), transform var(--transition-base);
   }
-  
+
   .card-shine:hover {
     box-shadow: var(--shadow-lg);
     transform: translateY(-1px);
   }
-  
+
   /* Button Shine Effects */
   .btn-shine {
     box-shadow: var(--shadow-button);
     transition: filter var(--transition-base), box-shadow var(--transition-base);
   }
-  
+
   .btn-shine:hover {
     filter: brightness(1.08);
     box-shadow: 0 4px 12px hsl(120 100% 20% / 0.35);
   }
-  
+
   /* Input Shine */
   .input-shine {
     @apply bg-input border-border;
     box-shadow: var(--shadow-sm);
     transition: box-shadow var(--transition-base), border-color var(--transition-base);
   }
-  
+
   .input-shine:focus {
     box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
   }
@@ -264,6 +280,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -271,9 +288,12 @@
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
   }
+
   50% {
     box-shadow: 0 0 40px hsl(var(--primary) / 0.6);
   }
@@ -283,6 +303,22 @@
   animation: fadeInUp 0.5s ease-out forwards;
 }
 
+
+
 .animate-pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Print Protection */
+@media print {
+  body {
+    display: none !important;
+  }
+}
+
+/* Print Protection */
+@media print {
+  body {
+    display: none !important;
+  }
 }

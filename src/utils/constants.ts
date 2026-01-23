@@ -1,5 +1,5 @@
 // Application Constants
-export const APP_NAME = 'GCMN Library';
+export const APP_NAME = 'GCFM Library';
 export const APP_FULL_NAME = 'Gov. College For Men Nazimabad Library';
 
 // Google Maps Location

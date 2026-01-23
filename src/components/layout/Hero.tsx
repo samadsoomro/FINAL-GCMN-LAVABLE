@@ -64,12 +64,11 @@ const Hero: React.FC = () => {
             </motion.div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight">
-              <span className="text-gradient">GCMN</span>{' '}
-              <span className="text-foreground">Library</span>
+              <span className="text-gradient">GCFM</span>
             </h1>
 
             <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-xl">
-              Your gateway to knowledge and academic excellence. Access thousands of books, 
+              Your gateway to knowledge and academic excellence. Access thousands of books,
               study materials, and rare collections at Gov. College For Men Nazimabad.
             </p>
 

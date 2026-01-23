@@ -72,6 +72,7 @@ function toSnakeCase(obj: any): any {
         else if (key === 'featuredImage') newObj.featured_image = obj.featuredImage;
         else if (key === 'shortDescription') newObj.short_description = obj.shortDescription;
         else if (key === 'isPinned') newObj.is_pinned = obj.isPinned;
+        else if (key === 'imageUrl') newObj.image_url = obj.imageUrl;
         else newObj[key] = obj[key];
     }
     return newObj;
@@ -93,6 +94,8 @@ const RARE_BOOK_SELECT = 'id, title, description, category, pdfPath:pdf_path, co
 const EVENT_SELECT = 'id, title, description, images, date, createdAt:created_at, updatedAt:updated_at';
 const NOTIFICATION_SELECT = 'id, title, message, image, pin, status, createdAt:created_at';
 const BLOG_SELECT = 'id, title, slug, shortDescription:short_description, content, featuredImage:featured_image, isPinned:is_pinned, status, createdAt:created_at, updatedAt:updated_at';
+const PRINCIPAL_SELECT = 'id, name, imageUrl:image_url, message, createdAt:created_at, updatedAt:updated_at';
+const FACULTY_SELECT = 'id, name, designation, description, imageUrl:image_url, createdAt:created_at, updatedAt:updated_at';
 
 class DbStorage {
     async init() {
@@ -685,6 +688,61 @@ class DbStorage {
         if (!p) return;
         const { data } = await supabase.from('blog_posts').update({ is_pinned: !p.is_pinned }).eq('id', id).select(BLOG_SELECT).single();
         return data;
+    }
+
+    async getPrincipal() {
+        const { data } = await supabase.from('principal').select(PRINCIPAL_SELECT).maybeSingle();
+        return data;
+    }
+
+    async updatePrincipal(principalData: any) {
+        // If no principal exists, create one. If exists, update it.
+        // We can check existence first.
+        const existing = await this.getPrincipal();
+        const toSave = toSnakeCase(principalData);
+        toSave.updated_at = new Date().toISOString();
+
+        if (existing) {
+            delete toSave.id;
+            const { data, error } = await supabase.from('principal').update(toSave).eq('id', existing.id).select(PRINCIPAL_SELECT).single();
+            if (error) throw error;
+            return data;
+        } else {
+            // insert
+            const { data, error } = await supabase.from('principal').insert(toSave).select(PRINCIPAL_SELECT).single();
+            if (error) throw error;
+            return data;
+        }
+    }
+
+    async getFaculty() {
+        const { data } = await supabase.from('faculty_staff').select(FACULTY_SELECT).order('created_at', { ascending: false });
+        return data || [];
+    }
+
+    async getFacultyMember(id: string) {
+        const { data } = await supabase.from('faculty_staff').select(FACULTY_SELECT).eq('id', id).maybeSingle();
+        return data;
+    }
+
+    async createFacultyMember(member: any) {
+        const toInsert = toSnakeCase(member);
+        const { data, error } = await supabase.from('faculty_staff').insert(toInsert).select(FACULTY_SELECT).single();
+        if (error) throw error;
+        return data;
+    }
+
+    async updateFacultyMember(id: string, member: any) {
+        const toUpdate = toSnakeCase(member);
+        delete toUpdate.id;
+        toUpdate.updated_at = new Date().toISOString();
+        const { data, error } = await supabase.from('faculty_staff').update(toUpdate).eq('id', id).select(FACULTY_SELECT).single();
+        if (error) throw error;
+        return data;
+    }
+
+    async deleteFacultyMember(id: string) {
+        await supabase.from('faculty_staff').delete().eq('id', id);
     }
 }
 

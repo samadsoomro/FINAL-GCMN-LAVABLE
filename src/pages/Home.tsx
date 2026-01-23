@@ -102,7 +102,7 @@ const Home: React.FC = () => {
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
             >
-              Why Choose GCMN Library?
+              Why Choose GCFM?
             </motion.h2>
             <motion.p
               className="text-lg text-muted-foreground"
@@ -221,7 +221,7 @@ const Home: React.FC = () => {
               Ready to Start Learning?
             </h2>
             <p className="text-lg text-white/90 mb-8">
-              Join thousands of students who are already using GCMN Library for their academic success.
+              Join thousands of students who are already using GCFM for their academic success.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <a

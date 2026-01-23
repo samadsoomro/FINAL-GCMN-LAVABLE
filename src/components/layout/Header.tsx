@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, User, LogOut, Shield, CreditCard, Home, Heart } from 'lucide-react';
+import { Menu, X, User, LogOut, Shield, CreditCard, Home, Heart, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -42,9 +42,18 @@ const Header: React.FC = () => {
     { path: '/events', label: 'Events' },
     { path: '/notifications', label: 'Notifications' },
     { path: '/library-card', label: 'Library Card' },
-    { path: '/about', label: 'About' },
+    {
+      label: 'About',
+      children: [
+        { path: '/history', label: 'History of College' },
+        { path: '/principal-message', label: 'Principal’s Message' },
+        { path: '/faculty', label: 'Faculty & Staff' },
+      ]
+    },
     { path: '/contact', label: 'Contact' },
   ];
+
+  const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
 
   const displayLinks = isAdminRoute ? [] : navLinks;
 
@@ -68,15 +77,15 @@ const Header: React.FC = () => {
               className="w-12 h-12 object-contain rounded-lg bg-white p-1 shadow-sm border border-primary/20"
             />
             <div className="flex flex-col">
-              <span className="text-lg font-bold text-primary leading-tight">GCMN Library</span>
+              <span className="text-lg font-bold text-primary leading-tight">GCFM</span>
               <span className="text-xs text-muted-foreground leading-tight hidden sm:block">
-                Gov. College For Men Nazimabad
+                Gov. College Formen Nazimabad
               </span>
             </div>
           </Link>
 
           {/* Desktop Nav */}
-          <ul className="hidden lg:flex items-center gap-5">
+          <ul className="hidden lg:flex items-center justify-center flex-1 gap-6">
             {isAdminRoute && isAdmin && (
               <li>
                 <Link
@@ -90,22 +99,61 @@ const Header: React.FC = () => {
               </li>
             )}
             {!isAdminRoute && displayLinks.map((link) => (
-              <li key={link.path}>
-                <Link
-                  to={link.path}
-                  className={`relative font-medium transition-colors py-2 flex items-center gap-1 text-sm ${location.pathname === link.path
-                    ? 'text-primary'
-                    : 'text-foreground hover:text-primary'
-                    }`}
-                >
-                  {link.label}
-                  {location.pathname === link.path && (
-                    <motion.div
-                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full"
-                      layoutId="navbar-indicator"
-                    />
-                  )}
-                </Link>
+              <li key={link.label} className="relative group">
+                {link.children ? (
+                  <div
+                    onMouseEnter={() => setHoveredMenu(link.label)}
+                    onMouseLeave={() => setHoveredMenu(null)}
+                    className="relative"
+                  >
+                    <button
+                      className={`font-medium transition-colors py-2 flex items-center gap-1 text-sm text-foreground hover:text-primary ${hoveredMenu === link.label ? 'text-primary' : ''}`}
+                    >
+                      {link.label}
+                      <ChevronDown size={14} className={`transition-transform duration-200 ${hoveredMenu === link.label ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    <AnimatePresence>
+                      {hoveredMenu === link.label && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute top-full left-1/2 -translate-x-1/2 pt-2 w-48"
+                        >
+                          <div className="bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-xl overflow-hidden p-1">
+                            {link.children.map((child) => (
+                              <Link
+                                key={child.path}
+                                to={child.path}
+                                className="block px-4 py-2.5 text-sm text-foreground hover:bg-primary/10 hover:text-primary rounded-lg transition-colors"
+                              >
+                                {child.label}
+                              </Link>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                ) : (
+                  <Link
+                    to={link.path!}
+                    className={`relative font-medium transition-colors py-2 flex items-center gap-1 text-sm ${location.pathname === link.path
+                      ? 'text-primary'
+                      : 'text-foreground hover:text-primary'
+                      }`}
+                  >
+                    {link.label}
+                    {location.pathname === link.path && (
+                      <motion.div
+                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full"
+                        layoutId="navbar-indicator"
+                      />
+                    )}
+                  </Link>
+                )}
               </li>
             ))}
 
@@ -231,16 +279,38 @@ const Header: React.FC = () => {
                     </li>
                   )}
                   {!isAdminRoute && displayLinks.map((link) => (
-                    <li key={link.path}>
-                      <Link
-                        to={link.path}
-                        className={`block px-4 py-3 rounded-lg transition-colors flex items-center gap-2 ${location.pathname === link.path
-                          ? 'bg-primary text-primary-foreground'
-                          : 'hover:bg-secondary'
-                          }`}
-                      >
-                        {link.label}
-                      </Link>
+                    <li key={link.label}>
+                      {link.children ? (
+                        <div className="space-y-1">
+                          <div className="px-4 py-2 font-medium text-primary/80 text-sm uppercase tracking-wider">
+                            {link.label}
+                          </div>
+                          {link.children.map((child) => (
+                            <Link
+                              key={child.path}
+                              to={child.path}
+                              className={`block px-4 py-3 ml-4 rounded-lg transition-colors flex items-center gap-2 border-l border-border/50 ${location.pathname === child.path
+                                ? 'text-primary font-medium bg-primary/5'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                                }`}
+                              onClick={() => setIsMenuOpen(false)}
+                            >
+                              {child.label}
+                            </Link>
+                          ))}
+                        </div>
+                      ) : (
+                        <Link
+                          to={link.path!}
+                          className={`block px-4 py-3 rounded-lg transition-colors flex items-center gap-2 ${location.pathname === link.path
+                            ? 'bg-primary text-primary-foreground'
+                            : 'hover:bg-secondary'
+                            }`}
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          {link.label}
+                        </Link>
+                      )}
                     </li>
                   ))}
 

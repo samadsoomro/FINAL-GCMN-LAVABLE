@@ -33,8 +33,8 @@ const upload = multer({
 });
 
 const ADMIN_EMAIL = "admin@formen.com";
-const ADMIN_PASSWORD = "gcmn123";
-const ADMIN_SECRET_KEY = "GCMN-ADMIN-ONLY";
+const ADMIN_PASSWORD = "gcfm123";
+const ADMIN_SECRET_KEY = "GCFM-ADMIN-ONLY";
 
 declare module "express-session" {
   interface SessionData {
@@ -1315,6 +1315,86 @@ export function registerRoutes(app: Express): void {
       if (!req.file) return res.status(400).json({ error: "No image provided" });
       const url = await storage.uploadFile('blog', req.file);
       res.json({ url });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Principal Routes
+  app.get("/api/principal", async (req, res) => {
+    try {
+      const data = await storage.getPrincipal();
+      res.json(data || {});
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/principal", requireAdmin, upload.single('image'), async (req: MulterRequest, res) => {
+    try {
+      const { name, message } = req.body;
+      const data: any = { name, message };
+
+      if (req.file) {
+        data.imageUrl = await storage.uploadFile('principal_images', req.file);
+      }
+
+      const result = await storage.updatePrincipal(data);
+      res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Faculty Routes
+  app.get("/api/faculty", async (req, res) => {
+    try {
+      const data = await storage.getFaculty();
+      res.json(data);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/faculty", requireAdmin, upload.single('image'), async (req: MulterRequest, res) => {
+    try {
+      const { name, designation, description } = req.body;
+      if (!name || !designation) {
+        return res.status(400).json({ error: "Name and Designation are required" });
+      }
+
+      const data: any = { name, designation, description };
+      if (req.file) {
+        data.imageUrl = await storage.uploadFile('faculty_images', req.file);
+      }
+
+      const result = await storage.createFacultyMember(data);
+      res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.put("/api/admin/faculty/:id", requireAdmin, upload.single('image'), async (req: MulterRequest, res) => {
+    try {
+      const { name, designation, description } = req.body;
+      const data: any = { name, designation, description };
+
+      if (req.file) {
+        data.imageUrl = await storage.uploadFile('faculty_images', req.file);
+      }
+
+      const result = await storage.updateFacultyMember(req.params.id, data);
+      res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/admin/faculty/:id", requireAdmin, async (req, res) => {
+    try {
+      await storage.deleteFacultyMember(req.params.id);
+      res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
