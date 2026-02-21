@@ -1,10 +1,15 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { app, initApp } from "../server/index";
 
-// Initialize the Express app (only runs once per cold start on Vercel)
-await initApp();
+let ready: Promise<void> | null = null;
 
-export default function handler(req: VercelRequest, res: VercelResponse) {
-    // Delegate all requests to the Express app
-    return app(req as any, res as any);
+function ensureInitialized() {
+    if (!ready) {
+        ready = initApp().then(() => { });
+    }
+    return ready;
+}
+
+export default async function handler(req: any, res: any) {
+    await ensureInitialized();
+    return app(req, res);
 }

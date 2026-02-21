@@ -14,5 +14,10 @@
             "src": "/(.*)",
             "dest": "/index.html"
         }
-    ]
+    ],
+    "functions": {
+        "api/index.ts": {
+            "includeFiles": "server/**"
+        }
+    }
 }
