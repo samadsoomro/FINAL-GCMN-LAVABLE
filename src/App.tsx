@@ -3,9 +3,16 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
-import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useLocation,
+  Navigate,
+} from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { BrandingProvider } from "@/contexts/BrandingContext";
 import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import Header from "@/components/layout/Header";
@@ -30,11 +37,6 @@ import NotificationsPage from "@/pages/Notifications";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import AdminDashboard from "@/pages/AdminDashboard";
-import AdminMessages from "@/pages/admin/Messages";
-import BorrowedBooks from "@/pages/admin/BorrowedBooks";
-import AdminLibraryCards from "@/pages/admin/LibraryCards";
-import AdminDonations from "@/pages/admin/Donations";
-import AdminRegisteredUsers from "@/pages/admin/RegisteredUsers";
 import BooksDetails from "@/pages/admin/BooksDetails";
 import History from "@/pages/History";
 import PrincipalMessage from "@/pages/PrincipalMessage";
@@ -47,73 +49,162 @@ const AnimatedRoutes = () => {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<PageTransition><Home /></PageTransition>} />
-        <Route path="/books" element={<PageTransition><Books /></PageTransition>} />
-        <Route path="/notes" element={<PageTransition><Notes /></PageTransition>} />
-        <Route path="/rare-books" element={<PageTransition><RareBooks /></PageTransition>} />
-        <Route path="/about" element={<PageTransition><About /></PageTransition>} />
-        <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
-        <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
-        <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
-        <Route path="/library-card" element={<PageTransition><LibraryCard /></PageTransition>} />
-        <Route path="/donate" element={<PageTransition><Donate /></PageTransition>} />
-        <Route path="/events" element={<PageTransition><Events /></PageTransition>} />
-        <Route path="/history" element={<PageTransition><History /></PageTransition>} />
-        <Route path="/principal-message" element={<PageTransition><PrincipalMessage /></PageTransition>} />
-        <Route path="/faculty" element={<PageTransition><Faculty /></PageTransition>} />
-        <Route path="/notifications" element={<PageTransition><NotificationsPage /></PageTransition>} />
-        <Route path="/blog" element={<PageTransition><Blog /></PageTransition>} />
-        <Route path="/blog/:slug" element={<PageTransition><BlogPost /></PageTransition>} />
+        <Route
+          path="/"
+          element={
+            <PageTransition>
+              <Home />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/books"
+          element={
+            <PageTransition>
+              <Books />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/notes"
+          element={
+            <PageTransition>
+              <Notes />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/rare-books"
+          element={
+            <PageTransition>
+              <RareBooks />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/about"
+          element={
+            <PageTransition>
+              <About />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/contact"
+          element={
+            <PageTransition>
+              <Contact />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <PageTransition>
+              <Login />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <PageTransition>
+              <Register />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/library-card"
+          element={
+            <PageTransition>
+              <LibraryCard />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/donate"
+          element={
+            <PageTransition>
+              <Donate />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/events"
+          element={
+            <PageTransition>
+              <Events />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/history"
+          element={
+            <PageTransition>
+              <History />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/principal-message"
+          element={
+            <PageTransition>
+              <PrincipalMessage />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/faculty"
+          element={
+            <PageTransition>
+              <Faculty />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <PageTransition>
+              <NotificationsPage />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/blog"
+          element={
+            <PageTransition>
+              <Blog />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/blog/:slug"
+          element={
+            <PageTransition>
+              <BlogPost />
+            </PageTransition>
+          }
+        />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        <Route
-          path="/admin/messages"
-          element={
-            <ProtectedRoute requireAdmin>
-              <PageTransition><AdminMessages /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/books/borrow"
-          element={
-            <ProtectedRoute requireAdmin>
-              <PageTransition><BorrowedBooks /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/library-cards"
-          element={
-            <ProtectedRoute requireAdmin>
-              <PageTransition><AdminLibraryCards /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/donations"
-          element={
-            <ProtectedRoute requireAdmin>
-              <PageTransition><AdminDonations /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/users"
-          element={
-            <ProtectedRoute requireAdmin>
-              <PageTransition><AdminRegisteredUsers /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
+
         <Route
           path="/admin/books-details"
           element={
             <ProtectedRoute requireAdmin>
-              <PageTransition><BooksDetails /></PageTransition>
+              <PageTransition>
+                <BooksDetails />
+              </PageTransition>
             </ProtectedRoute>
           }
         />
-        <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+        <Route
+          path="*"
+          element={
+            <PageTransition>
+              <NotFound />
+            </PageTransition>
+          }
+        />
       </Routes>
     </AnimatePresence>
   );
@@ -121,7 +212,7 @@ const AnimatedRoutes = () => {
 
 const LayoutRouter = () => {
   const location = useLocation();
-  const isAdminRoute = location.pathname.startsWith('/admin');
+  const isAdminRoute = location.pathname.startsWith("/admin");
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -153,16 +244,18 @@ const App = () => (
       defaultTheme="light"
       enableSystem={false}
       disableTransitionOnChange={false}
-      storageKey="gcmn-theme"
+      storageKey="gcfm-theme"
     >
       <BrowserRouter>
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <AppContent />
-          </TooltipProvider>
-        </AuthProvider>
+        <BrandingProvider>
+          <AuthProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <AppContent />
+            </TooltipProvider>
+          </AuthProvider>
+        </BrandingProvider>
       </BrowserRouter>
     </ThemeProvider>
   </QueryClientProvider>

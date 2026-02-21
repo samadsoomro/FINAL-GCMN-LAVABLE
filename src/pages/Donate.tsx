@@ -4,11 +4,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Heart, Smartphone, CreditCard, Check, Copy, Loader2 } from "lucide-react";
+import {
+  Heart,
+  Smartphone,
+  CreditCard,
+  Check,
+  Copy,
+  Loader2,
+} from "lucide-react";
 
 const donationAmounts = [500, 1000, 2000, 5000, 10000];
 
@@ -27,7 +40,7 @@ const Donate = () => {
   useEffect(() => {
     const fetchDonationInfo = async () => {
       try {
-        const res = await fetch('/api/admin/stats'); // Use existing stats endpoint or similar
+        const res = await fetch("/api/admin/stats"); // Use existing stats endpoint or similar
         if (res.ok) {
           const data = await res.json();
           setAdminDonationInfo(data);
@@ -60,7 +73,8 @@ const Donate = () => {
     if (!name || !email) {
       toast({
         title: "Missing Information",
-        description: "Please provide your name and email so we can acknowledge your donation.",
+        description:
+          "Please provide your name and email so we can acknowledge your donation.",
         variant: "destructive",
       });
       return;
@@ -68,7 +82,7 @@ const Donate = () => {
 
     setIsSubmitting(true);
     try {
-      await apiRequest('POST', '/api/donations', {
+      await apiRequest("POST", "/api/donations", {
         amount: amount.toString(),
         method,
         donorName: name,
@@ -79,7 +93,8 @@ const Donate = () => {
       setIsSuccess(true);
       toast({
         title: "Thank You!",
-        description: "Your donation has been recorded. We appreciate your support!",
+        description:
+          "Your donation has been recorded. We appreciate your support!",
       });
     } catch (error: any) {
       console.error("Error recording donation:", error);
@@ -109,10 +124,14 @@ const Donate = () => {
               Thank You for Your Generosity!
             </h1>
             <p className="text-muted-foreground mb-8">
-              Your donation of PKR {getAmount().toLocaleString()} has been recorded.
-              Your support helps us provide better resources and services to our students.
+              Your donation of PKR {getAmount().toLocaleString()} has been
+              recorded. Your support helps us provide better resources and
+              services to our students.
             </p>
-            <Button onClick={() => window.location.href = "/"} data-testid="button-return-home">
+            <Button
+              onClick={() => (window.location.href = "/")}
+              data-testid="button-return-home"
+            >
               Return to Home
             </Button>
           </motion.div>
@@ -136,8 +155,9 @@ const Donate = () => {
             Support Our Library
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Your generous donations help us acquire new books, maintain our facilities,
-            and provide better services to students and the community.
+            Your generous donations help us acquire new books, maintain our
+            facilities, and provide better services to students and the
+            community.
           </p>
         </motion.div>
 
@@ -150,14 +170,18 @@ const Donate = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Select Amount</CardTitle>
-                <CardDescription>Choose a preset amount or enter a custom value</CardDescription>
+                <CardDescription>
+                  Choose a preset amount or enter a custom value
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-3 gap-3">
                   {donationAmounts.map((amount) => (
                     <Button
                       key={amount}
-                      variant={selectedAmount === amount ? "default" : "outline"}
+                      variant={
+                        selectedAmount === amount ? "default" : "outline"
+                      }
                       className="h-14"
                       onClick={() => {
                         setSelectedAmount(amount);
@@ -175,7 +199,9 @@ const Donate = () => {
                     <span className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">Or enter custom amount</span>
+                    <span className="bg-card px-2 text-muted-foreground">
+                      Or enter custom amount
+                    </span>
                   </div>
                 </div>
 
@@ -240,7 +266,9 @@ const Donate = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Donation Methods</CardTitle>
-                <CardDescription>Choose your preferred payment method</CardDescription>
+                <CardDescription>
+                  Choose your preferred payment method
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="easypaisa" className="w-full">
@@ -260,21 +288,29 @@ const Donate = () => {
                       <div className="w-32 h-32 bg-background rounded-lg mx-auto mb-4 flex items-center justify-center border">
                         <div className="text-center">
                           <Smartphone className="w-12 h-12 text-primary mx-auto mb-2" />
-                          <p className="text-xs text-muted-foreground">Scan QR</p>
+                          <p className="text-xs text-muted-foreground">
+                            Scan QR
+                          </p>
                         </div>
                       </div>
-                      <p className="font-semibold text-foreground">EasyPaisa Number</p>
+                      <p className="font-semibold text-foreground">
+                        EasyPaisa Number
+                      </p>
                       <div className="flex items-center justify-center gap-2 mt-2">
                         <p className="text-2xl font-mono font-bold text-primary">
                           0300-1234567
                         </p>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
                           onClick={() => {
                             navigator.clipboard.writeText("03001234567");
-                            toast({ title: "Copied!", description: "EasyPaisa number copied to clipboard" });
+                            toast({
+                              title: "Copied!",
+                              description:
+                                "EasyPaisa number copied to clipboard",
+                            });
                           }}
                         >
                           <Copy size={14} />
@@ -292,7 +328,9 @@ const Donate = () => {
                       disabled={isSubmitting || !getAmount()}
                       data-testid="button-confirm-easypaisa"
                     >
-                      {isSubmitting ? "Processing..." : `Confirm Donation - PKR ${getAmount().toLocaleString()}`}
+                      {isSubmitting
+                        ? "Processing..."
+                        : `Confirm Donation - PKR ${getAmount().toLocaleString()}`}
                     </Button>
                   </TabsContent>
 
@@ -300,22 +338,31 @@ const Donate = () => {
                     <div className="p-6 bg-muted rounded-lg space-y-4">
                       <div className="flex justify-between items-center">
                         <div>
-                          <p className="text-sm text-muted-foreground">Account Number</p>
-                          <p className="font-mono font-bold">1234567890123456</p>
+                          <p className="text-sm text-muted-foreground">
+                            Account Number
+                          </p>
+                          <p className="font-mono font-bold">
+                            1234567890123456
+                          </p>
                         </div>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => {
                             navigator.clipboard.writeText("1234567890123456");
-                            toast({ title: "Copied!", description: "Account number copied to clipboard" });
+                            toast({
+                              title: "Copied!",
+                              description: "Account number copied to clipboard",
+                            });
                           }}
                         >
                           <Copy size={14} />
                         </Button>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Bank Name</p>
+                        <p className="text-sm text-muted-foreground">
+                          Bank Name
+                        </p>
                         <p className="font-bold">Habib Bank Limited (HBL)</p>
                       </div>
                       <div>
@@ -329,14 +376,19 @@ const Donate = () => {
                         <span className="w-full border-t" />
                       </div>
                       <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-card px-2 text-muted-foreground">Or pay with card</span>
+                        <span className="bg-card px-2 text-muted-foreground">
+                          Or pay with card
+                        </span>
                       </div>
                     </div>
 
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="cardNumber">Card Number</Label>
-                        <Input id="cardNumber" placeholder="1234 5678 9012 3456" />
+                        <Input
+                          id="cardNumber"
+                          placeholder="1234 5678 9012 3456"
+                        />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -361,7 +413,9 @@ const Donate = () => {
                       disabled={isSubmitting || !getAmount()}
                       data-testid="button-confirm-card"
                     >
-                      {isSubmitting ? "Processing..." : `Donate PKR ${getAmount().toLocaleString()}`}
+                      {isSubmitting
+                        ? "Processing..."
+                        : `Donate PKR ${getAmount().toLocaleString()}`}
                     </Button>
 
                     <p className="text-xs text-center text-muted-foreground">

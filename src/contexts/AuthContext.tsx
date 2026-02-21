@@ -1,10 +1,16 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 
 interface UserProfile {
   id: string;
   email: string;
   full_name: string;
-  role: 'admin' | 'moderator' | 'user';
+  role: "admin" | "moderator" | "user";
   department?: string;
   phone?: string;
   roll_number?: string;
@@ -12,13 +18,25 @@ interface UserProfile {
 }
 
 interface AuthContextType {
-  user: { id: string; email: string; name?: string; cardNumber?: string } | null;
+  user: {
+    id: string;
+    email: string;
+    name?: string;
+    cardNumber?: string;
+  } | null;
   profile: UserProfile | null;
   loading: boolean;
   isAdmin: boolean;
   isLibraryCard: boolean;
-  login: (email?: string, password?: string, secretKey?: string, libraryCardId?: string) => Promise<{ success: boolean; error?: string }>;
-  register: (userData: RegisterData) => Promise<{ success: boolean; error?: string }>;
+  login: (
+    email?: string,
+    password?: string,
+    secretKey?: string,
+    libraryCardId?: string,
+  ) => Promise<{ success: boolean; error?: string }>;
+  register: (
+    userData: RegisterData,
+  ) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
 }
 
@@ -30,6 +48,7 @@ interface RegisterData {
   student_class?: string;
   roll_number?: string;
   department?: string;
+  classification?: string; // New field for functional role
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -37,7 +56,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -47,7 +66,12 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<{ id: string; email: string; name?: string; cardNumber?: string } | null>(null);
+  const [user, setUser] = useState<{
+    id: string;
+    email: string;
+    name?: string;
+    cardNumber?: string;
+  } | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -55,18 +79,23 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const fetchCurrentUser = async () => {
     try {
-      const res = await fetch('/api/auth/me', { credentials: 'include' });
+      const res = await fetch("/api/auth/me", { credentials: "include" });
       if (res.ok) {
         const data = await res.json();
         setUser(data.user);
-        setIsAdmin(data.isAdmin || data.roles?.includes('admin') || false);
+        setIsAdmin(data.isAdmin || data.roles?.includes("admin") || false);
         setIsLibraryCard(data.isLibraryCard || false);
         if (data.profile) {
           setProfile({
             id: data.user.id,
             email: data.user.email,
             full_name: data.profile.fullName,
-            role: data.isAdmin || data.roles?.includes('admin') ? 'admin' : data.roles?.includes('moderator') ? 'moderator' : 'user',
+            role:
+              data.isAdmin || data.roles?.includes("admin")
+                ? "admin"
+                : data.roles?.includes("moderator")
+                  ? "moderator"
+                  : "user",
             department: data.profile.department,
             phone: data.profile.phone,
             roll_number: data.profile.rollNumber,
@@ -80,7 +109,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setIsLibraryCard(false);
       }
     } catch (error) {
-      console.error('Error fetching current user:', error);
+      console.error("Error fetching current user:", error);
       setUser(null);
       setProfile(null);
       setIsAdmin(false);
@@ -94,7 +123,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     fetchCurrentUser();
   }, []);
 
-  const login = async (email?: string, password?: string, secretKey?: string, libraryCardId?: string): Promise<{ success: boolean; error?: string }> => {
+  const login = async (
+    email?: string,
+    password?: string,
+    secretKey?: string,
+    libraryCardId?: string,
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
       const body: any = {};
       if (email) body.email = email;
@@ -102,17 +136,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       if (secretKey) body.secretKey = secretKey;
       if (libraryCardId) body.libraryCardId = libraryCardId;
 
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(body)
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body),
       });
-      
+
       const data = await res.json();
-      
+
       if (!res.ok) {
-        return { success: false, error: data.error || 'Login failed' };
+        return { success: false, error: data.error || "Login failed" };
       }
 
       if (data.redirect) {
@@ -126,12 +160,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const register = async (userData: RegisterData): Promise<{ success: boolean; error?: string }> => {
+  const register = async (
+    userData: RegisterData,
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           email: userData.email,
           password: userData.password,
@@ -140,13 +176,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           studentClass: userData.student_class,
           rollNumber: userData.roll_number,
           department: userData.department,
-        })
+          classification: userData.classification,
+        }),
       });
 
       const data = await res.json();
-      
+
       if (!res.ok) {
-        return { success: false, error: data.error || 'Registration failed' };
+        return { success: false, error: data.error || "Registration failed" };
       }
 
       await fetchCurrentUser();
@@ -158,12 +195,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include'
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
       });
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     }
     setUser(null);
     setProfile(null);
@@ -172,7 +209,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, isAdmin, isLibraryCard, login, register, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        profile,
+        loading,
+        isAdmin,
+        isLibraryCard,
+        login,
+        register,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

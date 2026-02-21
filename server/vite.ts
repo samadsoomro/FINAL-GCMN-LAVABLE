@@ -60,11 +60,14 @@ export function serveStatic(app: Express) {
 
   if (!fs.existsSync(distPath)) {
     throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`
+      `Could not find the build directory: ${distPath}, make sure to build the client first`,
     );
   }
 
-  app.use(express.static(distPath));
+  app.use(express.static(distPath, {
+    maxAge: "1y",
+    immutable: true,
+  }));
 
   app.use("/{*splat}", (_req, res) => {
     res.sendFile(path.resolve(distPath, "index.html"));

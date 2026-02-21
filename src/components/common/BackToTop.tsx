@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { ArrowUp } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from "react";
+import { ArrowUp } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const BackToTop = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -10,14 +10,14 @@ const BackToTop = () => {
       setIsVisible(window.scrollY > 300);
     };
 
-    window.addEventListener('scroll', toggleVisibility);
-    return () => window.removeEventListener('scroll', toggleVisibility);
+    window.addEventListener("scroll", toggleVisibility);
+    return () => window.removeEventListener("scroll", toggleVisibility);
   }, []);
 
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: 'smooth',
+      behavior: "smooth",
     });
   };
 

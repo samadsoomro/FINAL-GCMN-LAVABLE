@@ -4,17 +4,69 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GCFM - Gov. College Formen Nazimabad</title>
+  <title>DJ GOV. SCIENCE COLLEGE | Digital Library</title>
   <meta name="description"
-    content="Digital Library Management System for Government College Formen Nazimabad. Browse books, download study materials, and explore rare collections." />
-  <meta name="author" content="GCFM Library" />
-  <meta property="og:title" content="GCFM - Digital Learning Portal" />
-  <meta property="og:description" content="Your gateway to knowledge at Gov. College Formen Nazimabad" />
+    content="Official Digital Library of DJ Gov. Science College. Access thousands of books, research papers, and digital resources." />
+  <meta name="author" content="DJ Gov. Science College" />
+  <meta property="og:title" content="DJ GOV. SCIENCE COLLEGE - Digital Library" />
+  <meta property="og:description"
+    content="Access thousands of books, research papers, and digital resources at DJ Gov. Science College." />
   <meta property="og:type" content="website" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="/favicon.png" />
+  <script>
+    (function () {
+      try {
+        const cached = localStorage.getItem('gcfm-full-settings');
+        if (cached) {
+          const settings = JSON.parse(cached);
+          if (settings.primaryColor) {
+            const hex = settings.primaryColor.replace(/^#/, '');
+            const rHex = hex.length === 3 ? hex[0] + hex[0] : hex.substring(0, 2);
+            const gHex = hex.length === 3 ? hex[1] + hex[1] : hex.substring(2, 4);
+            const bHex = hex.length === 3 ? hex[2] + hex[2] : hex.substring(4, 6);
+            const r = parseInt(rHex, 16) / 255;
+            const g = parseInt(gHex, 16) / 255;
+            const b = parseInt(bHex, 16) / 255;
+            const max = Math.max(r, g, b), min = Math.min(r, g, b);
+            let h = 0, s = 0, l = (max + min) / 2;
+            if (max !== min) {
+              const d = max - min;
+              s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+              switch (max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+              }
+              h /= 6;
+            }
+            const hsl = `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+            document.documentElement.style.setProperty('--primary', hsl);
+            document.documentElement.style.setProperty('--ring', hsl);
+            document.documentElement.style.setProperty('--pakistan-green', hsl);
+            document.documentElement.style.setProperty('--pakistan-green-light', hsl);
+            document.documentElement.style.setProperty('--pakistan-green-lighter', hsl);
+            document.documentElement.style.setProperty('--pakistan-green-dark', hsl);
+            document.documentElement.style.setProperty('--accent', hsl);
+          }
+          if (settings.instituteFullName) {
+            document.title = settings.instituteFullName;
+          }
+          if (settings.navbarLogo) {
+            const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+            link.type = 'image/x-icon';
+            link.rel = 'shortcut icon';
+            link.href = settings.navbarLogo;
+            document.head.appendChild(link);
+          }
+        }
+      } catch (e) {
+        console.warn('Theme hydration failed:', e);
+      }
+    })();
+  </script>
   <style>
     #chat-helper-button-container,
     #chat-iframe-container,

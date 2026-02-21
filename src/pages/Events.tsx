@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Calendar, Image as ImageIcon, Clock } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Calendar, Image as ImageIcon, Clock } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 
 interface Event {
   id: string;
@@ -24,17 +24,17 @@ const EventsPage: React.FC = () => {
 
   const fetchEvents = async () => {
     try {
-      const res = await fetch('/api/events');
+      const res = await fetch("/api/events");
       if (res.ok) {
         const data = await res.json();
         setEvents(data);
       }
     } catch (error) {
-      console.error('Error fetching events:', error);
+      console.error("Error fetching events:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to load events',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to load events",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -63,7 +63,8 @@ const EventsPage: React.FC = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1 }}
           >
-            Stay updated with the latest happenings, seminars, and book fairs at GCMN Library.
+            Stay updated with the latest happenings, seminars, and book fairs at
+            GCMN Library.
           </motion.p>
         </div>
       </div>
@@ -90,7 +91,12 @@ const EventsPage: React.FC = () => {
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 text-primary font-medium text-sm">
                           <Calendar className="w-4 h-4" />
-                          {event.date ? new Date(event.date).toLocaleDateString(undefined, { dateStyle: 'long' }) : 'Date TBD'}
+                          {event.date
+                            ? new Date(event.date).toLocaleDateString(
+                                undefined,
+                                { dateStyle: "long" },
+                              )
+                            : "Date TBD"}
                         </div>
                         <h2 className="text-2xl lg:text-3xl font-bold text-foreground">
                           {event.title}
@@ -115,8 +121,15 @@ const EventsPage: React.FC = () => {
                           {event.images.length > 1 && (
                             <div className="grid grid-cols-3 gap-2">
                               {event.images.slice(1, 4).map((img, idx) => (
-                                <div key={idx} className="aspect-square rounded-md overflow-hidden border bg-background">
-                                  <img src={img} alt="" className="w-full h-full object-cover" />
+                                <div
+                                  key={idx}
+                                  className="aspect-square rounded-md overflow-hidden border bg-background"
+                                >
+                                  <img
+                                    src={img}
+                                    alt=""
+                                    className="w-full h-full object-cover"
+                                  />
                                 </div>
                               ))}
                             </div>
@@ -138,7 +151,9 @@ const EventsPage: React.FC = () => {
           <div className="text-center py-20 bg-muted/30 rounded-3xl border-2 border-dashed border-border">
             <Calendar className="w-16 h-16 mx-auto text-muted-foreground opacity-20 mb-4" />
             <h3 className="text-xl font-semibold mb-2">No Events Yet</h3>
-            <p className="text-muted-foreground">Check back later for upcoming library events.</p>
+            <p className="text-muted-foreground">
+              Check back later for upcoming library events.
+            </p>
           </div>
         )}
       </div>

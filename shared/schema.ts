@@ -3,6 +3,18 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const appRoleEnum = pgEnum("app_role", ["admin", "moderator", "user"]);
+export const adminRoleEnum = pgEnum("admin_role", ["system", "custom"]);
+
+export const adminCredentials = pgTable("admin_credentials", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  adminEmail: text("admin_email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  role: adminRoleEnum("role").default("custom").notNull(),
+  secretKey: text("secret_key"),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
 
 export const userRoles = pgTable("user_roles", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -41,6 +53,7 @@ export const bookBorrows = pgTable("book_borrows", {
   borrowerName: text("borrower_name").notNull(),
   borrowerPhone: text("borrower_phone"),
   borrowerEmail: text("borrower_email"),
+  libraryCardId: text("library_card_id"),
   borrowDate: timestamp("borrow_date", { withTimezone: true }).defaultNow().notNull(),
   dueDate: timestamp("due_date", { withTimezone: true }).notNull(),
   returnDate: timestamp("return_date", { withTimezone: true }),
@@ -70,6 +83,7 @@ export const libraryCardApplications = pgTable("library_card_applications", {
   studentId: text("student_id"),
   issueDate: date("issue_date"),
   validThrough: date("valid_through"),
+  dynamicFields: z.any().transform(v => typeof v === 'string' ? JSON.parse(v) : v).default({}), // Helper for JSONB in Supabase
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
@@ -255,3 +269,126 @@ export type Note = typeof notes.$inferSelect;
 export type BlogPost = typeof blogPosts.$inferSelect;
 export type Principal = typeof principal.$inferSelect;
 export type FacultyStaff = typeof facultyStaff.$inferSelect;
+
+// New Tables for Dynamic Home Page
+export const homeContent = pgTable("home_content", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  heroHeading: text("hero_heading").notNull().default("Where Knowledge Meets Inspiration"),
+  heroSubheading: text("hero_subheading").notNull().default("Access thousands of books, research papers, and digital resources to fuel your academic journey."),
+  heroOverlayText: text("hero_overlay_text").notNull().default("Welcome to Digital Learning"),
+  featuresHeading: text("features_heading").notNull().default("Why Choose GCFM?"),
+  featuresSubheading: text("features_subheading").notNull().default("Discover the features that make our library the perfect learning companion"),
+  affiliationsHeading: text("affiliations_heading").notNull().default("College Affiliations & Authorities"),
+  ctaHeading: text("cta_heading").notNull().default("Ready to Start Learning?"),
+  ctaSubheading: text("cta_subheading").notNull().default("Join thousands of students who are already using GCFM for their academic success."),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const homeSliderImages = pgTable("home_slider_images", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  imageUrl: text("image_url").notNull(),
+  order: decimal("order", { precision: 10, scale: 0 }).default("0").notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const homeAffiliations = pgTable("home_affiliations", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  logoUrl: text("logo_url").notNull(),
+  link: text("link"),
+  order: decimal("order", { precision: 10, scale: 0 }).default("0").notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const homeStats = pgTable("home_stats", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  label: text("label").notNull(),
+  number: text("number").notNull(),
+  icon: text("icon").notNull(), // 'BookOpen', 'Users', 'Award', 'TrendingUp' (Legacy/Default)
+  iconUrl: text("icon_url"), // Custom uploaded icon
+  color: text("color").notNull(), // Tailwind class
+  order: decimal("order", { precision: 10, scale: 0 }).default("0").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const homeButtons = pgTable("home_buttons", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  section: text("section").notNull(), // 'hero_primary', 'hero_secondary', 'cta_primary', 'cta_secondary'
+  text: text("text").notNull(),
+  link: text("link").notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const siteSettings = pgTable("site_settings", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  primaryColor: text("primary_color").default("#006600").notNull(),
+  navbarLogo: text("navbar_logo"),
+  loadingLogo: text("loading_logo"),
+  instituteShortName: text("institute_short_name").notNull().default("GCFM"),
+  instituteFullName: text("institute_full_name").notNull().default("Govt. College For Men Nazimabad"),
+  footerTitle: text("footer_title").notNull().default("GCFM Library"),
+  footerDescription: text("footer_description").notNull(),
+  facebookUrl: text("facebook_url"),
+  twitterUrl: text("twitter_url"),
+  instagramUrl: text("instagram_url"),
+  youtubeUrl: text("youtube_url"),
+  creditsText: text("credits_text").notNull(),
+  contributorsText: text("contributors_text"),
+  contactAddress: text("contact_address"),
+  contactPhone: text("contact_phone"),
+  contactEmail: text("contact_email"),
+  mapEmbedUrl: text("map_embed_url"),
+  footerTagline: text("footer_tagline"),
+  cardHeaderText: text("card_header_text").default("GOVT COLLEGE FOR MEN NAZIMABAD"),
+  cardSubheaderText: text("card_subheader_text").default("LIBRARY CARD"),
+  cardLogoUrl: text("card_logo_url"),
+  cardQrEnabled: boolean("card_qr_enabled").default(true),
+  cardQrUrl: text("card_qr_url").default("https://gcfm.edu.pk/verify"),
+  cardTermsText: text("card_terms_text"),
+  cardContactAddress: text("card_contact_address"),
+  cardContactEmail: text("card_contact_email"),
+  cardContactPhone: text("card_contact_phone"),
+  rbWatermarkText: text("rb_watermark_text").default("GCFM Library Archive"),
+  rbWatermarkOpacity: decimal("rb_watermark_opacity", { precision: 3, scale: 2 }).default("0.1"),
+  rbDisclaimerText: text("rb_disclaimer_text").default("Confidential • Do Not Distribute • GCFM Library Archive"),
+  rbWatermarkEnabled: boolean("rb_watermark_enabled").default(true),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const libraryCardFields = pgTable("library_card_fields", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  fieldLabel: text("field_label").notNull(),
+  fieldKey: text("field_key").notNull().unique(),
+  fieldType: text("field_type").default("text").notNull(),
+  isRequired: boolean("is_required").default(false),
+  showOnForm: boolean("show_on_form").default(true),
+  showOnCard: boolean("show_on_card").default(true),
+  showInAdmin: boolean("show_in_admin").default(true),
+  displayOrder: decimal("display_order", { precision: 10, scale: 0 }).default("0"),
+  options: z.any().default([]), // For selection menus
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const insertHomeContentSchema = createInsertSchema(homeContent).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertHomeSliderImageSchema = createInsertSchema(homeSliderImages).omit({ id: true, createdAt: true });
+export const insertHomeAffiliationSchema = createInsertSchema(homeAffiliations).omit({ id: true, createdAt: true });
+export const insertHomeStatSchema = createInsertSchema(homeStats).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertHomeButtonSchema = createInsertSchema(homeButtons).omit({ id: true, createdAt: true, updatedAt: true });
+
+export type InsertHomeContent = z.infer<typeof insertHomeContentSchema>;
+export type InsertHomeSliderImage = z.infer<typeof insertHomeSliderImageSchema>;
+export type InsertHomeStat = z.infer<typeof insertHomeStatSchema>;
+export type InsertHomeButton = z.infer<typeof insertHomeButtonSchema>;
+
+export type HomeContent = typeof homeContent.$inferSelect;
+export type HomeSliderImage = typeof homeSliderImages.$inferSelect;
+export type HomeAffiliation = typeof homeAffiliations.$inferSelect;
+export type HomeStat = typeof homeStats.$inferSelect;
+export type HomeButton = typeof homeButtons.$inferSelect;

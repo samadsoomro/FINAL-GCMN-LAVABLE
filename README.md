@@ -1,23 +1,27 @@
-# GCMN Library Management System
+# CMS Library Management System
 
 ## Project Overview
-This is the complete source code for the Government College For Men Nazimabad (GCMN) Library Management System. It features book management, library card applications, study notes, and an admin dashboard.
+A full-stack Library Management System built with React + Express + Supabase. Features include book management, library card applications, study notes, rare books, blog, and a complete admin dashboard.
 
 ## Quick Start
 1. **Install Dependencies**: `npm install`
-2. **Start Development Server**: `npm run dev`
-3. **Build for Production**: `npm run build`
+2. **Configure Environment**: Copy `.env.example` → `.env` and fill in your values
+3. **Start Development Server**: `npm start`
+4. **Build for Production**: `npm run build`
 
 ## Project Structure
-- `src/`: React frontend source code
-- `server/`: Express backend and local storage logic
-- `.data/`: Local JSON data persistence
-- `public/`: Static assets and PDF uploads
-
-## Admin Credentials
-- **Email**: admin@formen.com
-- **Password**: gcmn123
-- **Secret Key**: GCMN-ADMIN-ONLY
+- `src/` — React frontend (Vite + TypeScript)
+- `server/` — Express backend
+- `api/` — Vercel serverless entry point
+- `supabase/migrations/` — Database migration SQL files
 
 ## Deployment
-The project is configured for deployment on Replit using the VM runtime. Ensure `SESSION_SECRET` is set in environment variables for production use.
+Configured for **Vercel** deployment. See `.env.example` for required environment variables.
+Set all env vars in Vercel Dashboard → Project Settings → Environment Variables before deploying.
+
+## Tech Stack
+- **Frontend**: React 18, Vite, Tailwind CSS, shadcn/ui
+- **Backend**: Express.js (Node 20)
+- **Database**: Supabase (PostgreSQL)
+- **Auth**: Session-based (express-session + connect-pg-simple)
+- **Deployment**: Vercel (serverless)

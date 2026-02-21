@@ -1,67 +1,96 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Mail, Lock, LogIn, AlertCircle, Key, CreditCard, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import collegeLogo from '@/assets/images/college-logo.png';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
+import {
+  Mail,
+  Lock,
+  LogIn,
+  AlertCircle,
+  Key,
+  CreditCard,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useBranding } from "@/contexts/BrandingContext";
+import collegeLogo from "@/assets/images/college-logo.png";
 
 const Login: React.FC = () => {
-  const [formData, setFormData] = useState({ email: '', password: '', secretKey: '', libraryCardId: '' });
-  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    secretKey: "",
+    libraryCardId: "",
+  });
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [useLibraryCard, setUseLibraryCard] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { login, user, isAdmin } = useAuth();
+  const { settings } = useBranding();
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     if (user) {
-      const from = (location.state as any)?.from?.pathname || (isAdmin ? '/admin-dashboard' : '/');
+      const from =
+        (location.state as any)?.from?.pathname ||
+        (isAdmin ? "/admin-dashboard" : "/");
       navigate(from, { replace: true });
     }
   }, [user, isAdmin, navigate, location]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     if (useLibraryCard) {
       if (!formData.libraryCardId || !formData.password) {
-        setError('Please enter both Library Card ID and Password.');
+        setError("Please enter both Library Card ID and Password.");
         setLoading(false);
         return;
       }
 
-      const result = await login(undefined, formData.password, undefined, formData.libraryCardId);
+      const result = await login(
+        undefined,
+        formData.password,
+        undefined,
+        formData.libraryCardId,
+      );
 
       if (!result.success) {
-        const errorMessage = result.error || 'Login failed';
-        if (errorMessage.toLowerCase().includes('write correct details')) {
-          setError('Write correct details');
-        } else if (errorMessage.toLowerCase().includes('wait for approval by library')) {
-          setError('Wait for approval by library');
-        } else if (errorMessage.toLowerCase().includes('rejected')) {
-          setError('Your library card application was rejected.');
-        } else if (errorMessage.toLowerCase().includes('not active')) {
-          setError('Library card is not active. Please contact the library.');
+        const errorMessage = result.error || "Login failed";
+        if (errorMessage.toLowerCase().includes("write correct details")) {
+          setError("Write correct details");
+        } else if (
+          errorMessage.toLowerCase().includes("wait for approval by library")
+        ) {
+          setError("Wait for approval by library");
+        } else if (errorMessage.toLowerCase().includes("rejected")) {
+          setError("Your library card application was rejected.");
+        } else if (errorMessage.toLowerCase().includes("not active")) {
+          setError("Library card is not active. Please contact the library.");
         } else {
           setError(errorMessage);
         }
       }
     } else {
       if (!formData.email || !formData.password) {
-        setError('Please fill in email and password');
+        setError("Please fill in email and password");
         setLoading(false);
         return;
       }
 
-      const result = await login(formData.email, formData.password, formData.secretKey || undefined);
+      const result = await login(
+        formData.email,
+        formData.password,
+        formData.secretKey || undefined,
+      );
       if (!result.success) {
-        setError(result.error || 'Login failed');
+        setError(result.error || "Login failed");
       }
     }
     setLoading(false);
@@ -82,13 +111,15 @@ const Login: React.FC = () => {
         <div className="text-center mb-8">
           <div className="w-24 h-24 mx-auto mb-4 rounded-xl overflow-hidden shadow-lg bg-white p-2">
             <img
-              src={collegeLogo}
-              alt="GCMN College Logo"
+              src={settings.navbarLogo || collegeLogo}
+              alt={`${settings.instituteShortName} College Logo`}
               className="w-full h-full object-contain"
             />
           </div>
           <h1 className="text-2xl font-bold text-foreground">Welcome Back</h1>
-          <p className="text-muted-foreground">Sign in to your GCMN Library account</p>
+          <p className="text-muted-foreground">
+            Sign in to your {settings.instituteShortName} account
+          </p>
         </div>
 
         {error && (
@@ -103,10 +134,11 @@ const Login: React.FC = () => {
             <button
               type="button"
               onClick={() => setUseLibraryCard(false)}
-              className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${!useLibraryCard
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                }`}
+              className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${
+                !useLibraryCard
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
             >
               <Mail size={14} className="inline mr-1" />
               Email Login
@@ -114,10 +146,11 @@ const Login: React.FC = () => {
             <button
               type="button"
               onClick={() => setUseLibraryCard(true)}
-              className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${useLibraryCard
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                }`}
+              className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${
+                useLibraryCard
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
             >
               <CreditCard size={14} className="inline mr-1" />
               Card ID
@@ -137,7 +170,9 @@ const Login: React.FC = () => {
                 <Input
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                   placeholder="your@email.com"
                 />
               </div>
@@ -155,7 +190,9 @@ const Login: React.FC = () => {
                 <Input
                   type="text"
                   value={formData.libraryCardId}
-                  onChange={(e) => setFormData({ ...formData, libraryCardId: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, libraryCardId: e.target.value })
+                  }
                   placeholder="e.g., CS-E-09-12"
                 />
               </div>
@@ -165,13 +202,15 @@ const Login: React.FC = () => {
           <div>
             <label className="text-sm font-medium text-foreground flex items-center gap-2 mb-2">
               <Lock size={16} />
-              {useLibraryCard ? 'Card Login Password' : 'Password'}
+              {useLibraryCard ? "Card Login Password" : "Password"}
             </label>
             <div className="relative">
               <Input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
                 placeholder="••••••••"
                 className="pr-10"
               />
@@ -189,35 +228,43 @@ const Login: React.FC = () => {
             <div>
               <label className="text-sm font-medium text-foreground flex items-center gap-2 mb-2">
                 <Key size={16} />
-                Secret Key (Optional - Admin Only)
+                Secret Key (Required for Admin)
               </label>
               <Input
                 type="password"
                 value={formData.secretKey}
-                onChange={(e) => setFormData({ ...formData, secretKey: e.target.value })}
-                placeholder="Leave blank for normal login"
+                onChange={(e) =>
+                  setFormData({ ...formData, secretKey: e.target.value })
+                }
+                placeholder="Required for Admin Access"
               />
             </div>
           )}
 
           <Button type="submit" className="w-full gap-2" disabled={loading}>
             <LogIn size={18} />
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? "Signing in..." : "Sign In"}
           </Button>
         </form>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
           {useLibraryCard ? (
             <>
-              Don't have a library card?{' '}
-              <Link to="/library-card" className="text-primary font-medium hover:underline">
+              Don't have a library card?{" "}
+              <Link
+                to="/library-card"
+                className="text-primary font-medium hover:underline"
+              >
                 Apply for it
               </Link>
             </>
           ) : (
             <>
-              Don't have an account?{' '}
-              <Link to="/register" className="text-primary font-medium hover:underline">
+              Don't have an account?{" "}
+              <Link
+                to="/register"
+                className="text-primary font-medium hover:underline"
+              >
                 Register here
               </Link>
             </>

@@ -1,11 +1,17 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { useScrollAnimation } from '@/hooks/use-scroll-animation';
+import React from "react";
+import { motion } from "framer-motion";
+import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 
 interface ScrollAnimationWrapperProps {
   children: React.ReactNode;
   className?: string;
-  animation?: 'fadeUp' | 'fadeIn' | 'slideLeft' | 'slideRight' | 'scale' | 'fadeDown';
+  animation?:
+    | "fadeUp"
+    | "fadeIn"
+    | "slideLeft"
+    | "slideRight"
+    | "scale"
+    | "fadeDown";
   delay?: number;
   duration?: number;
   threshold?: number;
@@ -40,8 +46,8 @@ const animations = {
 
 const ScrollAnimationWrapper: React.FC<ScrollAnimationWrapperProps> = ({
   children,
-  className = '',
-  animation = 'fadeUp',
+  className = "",
+  animation = "fadeUp",
   delay = 0,
   duration = 0.6,
   threshold = 0.1,
@@ -53,7 +59,7 @@ const ScrollAnimationWrapper: React.FC<ScrollAnimationWrapperProps> = ({
       ref={ref}
       className={className}
       initial="hidden"
-      animate={isVisible ? 'visible' : 'hidden'}
+      animate={isVisible ? "visible" : "hidden"}
       variants={animations[animation]}
       transition={{
         duration,

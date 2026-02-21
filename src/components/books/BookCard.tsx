@@ -1,8 +1,8 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { BookOpen, User, Calendar, MapPin, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import type { Book } from '@/utils/constants';
+import React from "react";
+import { motion } from "framer-motion";
+import { BookOpen, User, Calendar, MapPin, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { Book } from "@/utils/constants";
 
 interface BookCardProps {
   book: Book;
@@ -11,8 +11,13 @@ interface BookCardProps {
   isBorrowing?: boolean;
 }
 
-const BookCard: React.FC<BookCardProps> = ({ book, onBorrow, onViewDetails, isBorrowing = false }) => {
-  const isAvailable = book.available_copies > 0 && book.status === 'available';
+const BookCard: React.FC<BookCardProps> = ({
+  book,
+  onBorrow,
+  onViewDetails,
+  isBorrowing = false,
+}) => {
+  const isAvailable = book.available_copies > 0 && book.status === "available";
 
   return (
     <motion.div
@@ -23,7 +28,11 @@ const BookCard: React.FC<BookCardProps> = ({ book, onBorrow, onViewDetails, isBo
       {/* Book Cover */}
       <div className="relative w-full h-72 bg-secondary overflow-hidden">
         {book.cover_image ? (
-          <img src={book.cover_image} alt={book.title} className="w-full h-full object-cover" />
+          <img
+            src={book.cover_image}
+            alt={book.title}
+            className="w-full h-full object-cover"
+          />
         ) : (
           <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-secondary to-muted text-muted-foreground">
             <BookOpen size={48} />
@@ -34,11 +43,11 @@ const BookCard: React.FC<BookCardProps> = ({ book, onBorrow, onViewDetails, isBo
         <div
           className={`absolute top-3 right-3 px-3 py-1 text-xs font-semibold rounded-full uppercase tracking-wide ${
             isAvailable
-              ? 'bg-pakistan-green text-white'
-              : 'bg-destructive text-destructive-foreground'
+              ? "bg-primary text-white"
+              : "bg-destructive text-destructive-foreground"
           }`}
         >
-          {isAvailable ? 'Available' : 'Unavailable'}
+          {isAvailable ? "Available" : "Unavailable"}
         </div>
       </div>
 
@@ -71,7 +80,13 @@ const BookCard: React.FC<BookCardProps> = ({ book, onBorrow, onViewDetails, isBo
 
         <div className="flex items-center justify-between text-sm pt-2 border-t border-border mt-auto">
           <span className="text-muted-foreground">{book.category}</span>
-          <span className={isAvailable ? 'text-pakistan-green font-medium' : 'text-destructive font-medium'}>
+          <span
+            className={
+              isAvailable
+                ? "text-primary font-medium"
+                : "text-destructive font-medium"
+            }
+          >
             {book.available_copies}/{book.total_copies} copies
           </span>
         </div>
@@ -98,9 +113,9 @@ const BookCard: React.FC<BookCardProps> = ({ book, onBorrow, onViewDetails, isBo
                 Borrowing...
               </>
             ) : isAvailable ? (
-              'Borrow'
+              "Borrow"
             ) : (
-              'Unavailable'
+              "Unavailable"
             )}
           </Button>
         </div>

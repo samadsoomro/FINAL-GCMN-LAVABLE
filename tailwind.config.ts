@@ -60,17 +60,17 @@ export default {
         // Pakistan Theme Colors
         pakistan: {
           green: {
-            DEFAULT: "hsl(151 84% 22%)",
-            light: "hsl(150 75% 30%)",
-            lighter: "hsl(150 65% 40%)",
-            dark: "hsl(147 100% 11%)",
-            darkest: "hsl(147 100% 9%)",
+            DEFAULT: "hsl(var(--primary))",
+            light: "hsl(var(--primary) / 0.8)",
+            lighter: "hsl(var(--primary) / 0.6)",
+            dark: "hsl(var(--primary) / 0.9)",
+            darkest: "hsl(var(--primary) / 1)",
           },
           gold: {
-            DEFAULT: "hsl(43 74% 52%)",
-            light: "hsl(43 74% 62%)",
+            DEFAULT: "hsl(var(--warning))",
+            light: "hsl(var(--warning) / 0.8)",
           },
-          emerald: "hsl(150 60% 50%)",
+          emerald: "hsl(var(--success))",
         },
         success: "hsl(var(--success))",
         warning: "hsl(var(--warning))",

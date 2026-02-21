@@ -1,11 +1,14 @@
-import React from 'react';
+import React from "react";
 
 interface PakistanMapProps {
   className?: string;
   opacity?: number;
 }
 
-const PakistanMap: React.FC<PakistanMapProps> = ({ className = '', opacity = 0.05 }) => {
+const PakistanMap: React.FC<PakistanMapProps> = ({
+  className = "",
+  opacity = 0.05,
+}) => {
   return (
     <svg
       className={className}
