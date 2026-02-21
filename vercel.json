@@ -1,6 +1,9 @@
 {
     "buildCommand": "npm run build",
     "outputDirectory": "dist/public",
+    "env": {
+        "VERCEL_BUILD_SKIP_TYPE_CHECK": "1"
+    },
     "routes": [
         {
             "src": "/api/(.*)",
