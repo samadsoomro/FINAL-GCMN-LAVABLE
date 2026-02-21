@@ -1,15 +1,22 @@
 module.exports = {
-  apps: [{
-    name: "gcfm-library",
-    script: "./server/index.ts",
-    interpreter: "node",
-    interpreter_args: "--import tsx",
-    env: {
-      NODE_ENV: "production",
-      PORT: 5000
-    },
-    autorestart: true,
-    watch: false,
-    max_memory_restart: '1G'
-  }]
+  apps: [
+    {
+      name: 'cms-api',
+      script: 'server/index.ts',
+      interpreter: 'node_modules/.bin/tsx',
+      watch: true,
+      env: {
+        NODE_ENV: 'production',
+        PORT: 5000
+      },
+      env_production: {
+        NODE_ENV: 'production',
+        PORT: 5000
+      },
+      max_memory_restart: '1G',
+      error_file: 'logs/err.log',
+      out_file: 'logs/out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss'
+    }
+  ]
 };
