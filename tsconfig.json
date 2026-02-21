@@ -29,8 +29,5 @@
     "noUnusedLocals": false,
     "allowJs": true,
     "strictNullChecks": false
-  },
-  "include": [
-    "src"
-  ]
+  }
 }
