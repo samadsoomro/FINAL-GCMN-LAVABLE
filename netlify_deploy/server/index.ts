@@ -120,16 +120,10 @@ export async function initApp() {
     res.status(status).json({ message });
   });
 
-  // Serve static uploads directory (only relevant in non-serverless environments)
-  const uploadDir = path.join(process.cwd(), "server", "uploads");
-  app.use("/server/uploads", express.static(uploadDir));
-
   return app;
 }
 
 // Only start the HTTP server when NOT running on Vercel/Netlify
-// Note: process.env.NETLIFY is not always reliably "true" in some runtime versions, 
-// so we also check for other platform-specific env vars like SITE_ID.
 const isServerless = !!process.env.VERCEL || !!process.env.NETLIFY || !!process.env.SITE_ID || !!process.env.CONTEXT;
 if (!isServerless) {
   (async () => {

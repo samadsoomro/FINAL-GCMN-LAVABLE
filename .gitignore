@@ -2,6 +2,7 @@
 .env
 .data/
 .gemini/
+.netlify/
 .replit
 replit.md
 
