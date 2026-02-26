@@ -162,16 +162,22 @@ export function registerRoutes(app: Express): void {
             req.session.userId = adminCreds.role === "developer" ? "developer-admin" : "admin";
             req.session.isAdmin = true;
 
-            return req.session.save((err) => {
-              if (err) {
-                console.error("[AUTH] Session save error:", err);
-                return res.status(500).json({ error: "Failed to save session" });
-              }
-              return res.json({
-                user: { id: adminCreds.id, email: adminCreds.adminEmail },
-                isAdmin: true,
-                redirect: "/admin-dashboard",
+            await new Promise<void>((resolve, reject) => {
+              req.session.save((err) => {
+                if (err) {
+                  console.error("[AUTH] Session save error:", err);
+                  reject(err);
+                } else {
+                  console.log("[AUTH] Session saved successfully");
+                  resolve();
+                }
               });
+            });
+
+            return res.json({
+              user: { id: adminCreds.id, email: adminCreds.adminEmail },
+              isAdmin: true,
+              redirect: "/admin-dashboard",
             });
           } else {
             console.log(
