@@ -114,7 +114,7 @@ let serverlessHandler: any = null;
 
 async function initServerlessApp() {
   if (initialized) return;
-  initialized = true;
+  // Note: We don't set initialized=true here yet to allow retries on failure
 
   const store = await buildSessionStore();
   app.use(
@@ -161,6 +161,8 @@ async function initServerlessApp() {
     const { serveStatic } = await import("../server/vite.js");
     serveStatic(app);
   }
+
+  initialized = true; // Mark as successful only at the very end
 }
 
 export default async function handler(req: any, res: any) {
@@ -172,12 +174,16 @@ export default async function handler(req: any, res: any) {
     return serverlessHandler(req, res);
   } catch (error: any) {
     console.error("[Vercel API] Fatal Boot Error:", error);
+
+    // NATIVE RECOVERY: Do not use Express methods here as 'app' might be broken
     if (!res.headersSent) {
+      res.statusCode = 500;
       res.setHeader("Content-Type", "application/json");
-      res.status(500).json({
+      res.end(JSON.stringify({
         error: "Critical server initialization failure.",
-        details: error?.message || String(error)
-      });
+        details: error?.message || String(error),
+        timestamp: new Date().toISOString()
+      }));
     }
   }
 }
