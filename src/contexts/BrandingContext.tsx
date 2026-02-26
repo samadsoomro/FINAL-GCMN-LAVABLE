@@ -52,13 +52,11 @@ interface BrandingContextType {
 const defaultSettings: SiteSettings = {
   id: "00000000-0000-0000-0000-000000000000",
   primaryColor: "#1f6be5",
-  navbarLogo:
-    "https://okxbrjdtqukxsumksexf.supabase.co/storage/v1/object/public/branding/1769789487705-980090963-seccap-logo.png",
-  loadingLogo:
-    "https://okxbrjdtqukxsumksexf.supabase.co/storage/v1/object/public/branding/1769789489037-648912146-seccap-logo.png",
-  instituteShortName: "DJ GOV. SCIENCE COLLEGE",
-  instituteFullName: "DJ GOV. SCIENCE COLLEGE",
-  footerTitle: "DJ Gov. Science College Library",
+  navbarLogo: null,
+  loadingLogo: null,
+  instituteShortName: "GCFM",
+  instituteFullName: "GOVERNMENT COLLEGE FOR MEN NAZIMABAD",
+  footerTitle: "GCFM Library Management System",
   footerDescription:
     "DJ Government Science College Library is committed to providing quality educational resources and fostering a culture of learning and academic excellence.",
   facebookUrl: "https://facebook.com",
@@ -69,8 +67,8 @@ const defaultSettings: SiteSettings = {
   contributorsText:
     "Sir Ubaid Anwar (Head of Computer Department), Abdul Samad, Muhammad Salman Bhatti (CS Field)",
   contactAddress: "Nazimabad, Karachi, Pakistan",
-  contactPhone: "+92 21 XXXX XXXX",
-  contactEmail: "library@gcfm.edu.pk",
+  contactPhone: "+92 21 99260XX",
+  contactEmail: "admin@formen.com",
   mapEmbedUrl:
     "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3619.680!2d67.0318857!3d24.909972...!", // truncated for brevity
   googleMapLink: "https://maps.app.goo.gl/ZL8emjpGbgZsknKA7",
@@ -78,7 +76,7 @@ const defaultSettings: SiteSettings = {
   heroBackgroundLogo: null,
   heroBackgroundOpacity: 0.35,
   // Library Card Layout Defaults
-  cardHeaderText: "DJ GOV. SCIENCE COLLEGE",
+  cardHeaderText: "GCFM NAZIMABAD",
   cardSubheaderText: "COLLEGE CARD",
   cardLogoUrl:
     "https://okxbrjdtqukxsumksexf.supabase.co/storage/v1/object/public/branding/1769846074511-358185530-Gsindh_Logo.png",
@@ -90,9 +88,9 @@ const defaultSettings: SiteSettings = {
   cardContactEmail: "library@gcfm.edu.pk",
   cardContactPhone: "+92 21 X2111XXX XXXX",
   // Rare Book Preview Defaults
-  rbWatermarkText: "DJ GOV. SCIENCE COLLEGE",
+  rbWatermarkText: "GCFM NAZIMABAD",
   rbWatermarkOpacity: 0.1,
-  rbDisclaimerText: "Confidential • Do Not Distribute • DJGSC Library Archive",
+  rbDisclaimerText: "Confidential • Do Not Distribute • GCFM Library Archive",
   rbWatermarkEnabled: true,
   updatedAt: new Date().toISOString(),
 };

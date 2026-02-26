@@ -149,9 +149,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return { success: false, error: data.error || "Login failed" };
       }
 
-      if (data.redirect) {
-        window.location.href = data.redirect;
-      }
+      // Redirect will be handled by the component via useEffect or programmatic navigate
+      // instead of hard window.location.href which clears state/sessions prematurely.
 
       await fetchCurrentUser();
       return { success: true };

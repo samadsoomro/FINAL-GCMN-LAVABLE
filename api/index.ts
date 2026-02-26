@@ -33,6 +33,10 @@ async function buildSessionStore(): Promise<session.Store> {
         ssl: { rejectUnauthorized: false }
       });
 
+      // Verify connection immediately
+      await pool.query("SELECT 1");
+      log("Postgres connection verified for session store.", "session");
+
       const store = new PgSession({
         pool,
         createTableIfMissing: false,
@@ -102,6 +106,14 @@ async function initServerlessApp() {
       secret: process.env.SESSION_SECRET || "gcfm-library-secret-2026",
     }),
   );
+
+  // Debug session middleware
+  app.use((req, res, next) => {
+    if (req.path.startsWith("/api/auth/me")) {
+      log(`Session ID: ${req.sessionID}, User: ${req.session?.userId}, Admin: ${req.session?.isAdmin}`, "session-debug");
+    }
+    next();
+  });
 
   await storage.init();
   registerRoutes(app);
