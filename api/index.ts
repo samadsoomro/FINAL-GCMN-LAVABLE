@@ -5,9 +5,9 @@ import session from "express-session";
 import path from "path";
 import serverless from "serverless-http";
 import compression from "compression";
-import { registerRoutes } from "../server/routes";
-import { log } from "../server/log";
-import { storage } from "../server/db-storage";
+import { registerRoutes } from "../server/routes.js";
+import { log } from "../server/log.js";
+import { storage } from "../server/db-storage.js";
 
 const app = express();
 app.use(express.json({ limit: "1024mb" }));
@@ -118,7 +118,7 @@ async function initServerlessApp() {
 
   // Vercel static fallback
   if (process.env.NODE_ENV !== "development" || !!process.env.VERCEL) {
-    const { serveStatic } = await import("../server/vite");
+    const { serveStatic } = await import("../server/vite.js");
     serveStatic(app);
   }
 }

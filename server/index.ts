@@ -2,9 +2,9 @@ import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { createServer } from "http";
 import path from "path";
-import { registerRoutes } from "./routes";
-import { log } from "./log";
-import { storage } from "./db-storage";
+import { registerRoutes } from "./routes.js";
+import { log } from "./log.js";
+import { storage } from "./db-storage.js";
 import compression from "compression";
 
 declare module "express-session" {
@@ -126,7 +126,7 @@ export async function initApp() {
 
   // Vercel / Production static fallback
   if (process.env.NODE_ENV !== "development" || !!process.env.VERCEL) {
-    const { serveStatic } = await import("./vite");
+    const { serveStatic } = await import("./vite.js");
     serveStatic(app);
   }
 
@@ -144,7 +144,7 @@ if (!isServerless) {
     server.headersTimeout = 66000;
 
     if (application.get("env") === "development") {
-      const { setupVite } = await import("./vite");
+      const { setupVite } = await import("./vite.js");
       await setupVite(application, server);
     }
 

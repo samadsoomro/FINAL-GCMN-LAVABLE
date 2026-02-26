@@ -175,13 +175,8 @@ class DbStorage {
     try {
       const client = getSupabase();
 
-      const { error } = await client.from("users").select("id").limit(1);
-      if (error) {
-        console.error("Supabase connection error:", error);
-      } else {
-        console.log("Supabase connected successfully.");
-        await this.seedAdminCredentials();
-      }
+      // Fire and forget - do not block Vercel cold starts with database pings
+      this.seedAdminCredentials().catch(e => console.error("Admin seed error:", e.message));
     } catch (e: any) {
       console.error("Failed to initialize Supabase client:", e.message);
     }

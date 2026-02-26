@@ -1,5 +1,5 @@
 import type { Express, Request } from "express";
-import { storage } from "./db-storage";
+import { storage } from "./db-storage.js";
 import bcrypt from "bcryptjs";
 import multer from "multer";
 import path from "path";
