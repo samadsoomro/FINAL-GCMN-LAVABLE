@@ -56,8 +56,10 @@ async function buildSessionStore(): Promise<session.Store> {
           cachedStore = null;
         });
 
-        // Verify connection immediately
-        await cachedPool.query("SELECT 1");
+        // Verify connection with timeout to prevent Vercel 504 stalls
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Database connection timeout")), 10000));
+        await Promise.race([cachedPool.query("SELECT 1"), timeoutPromise]);
+
         log("Postgres pooling stable.", "session");
       }
 

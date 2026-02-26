@@ -315,12 +315,35 @@ class DbStorage {
   }
 
   async getUser(id: string) {
+    if (id === "admin" || id === "developer-admin") {
+      return {
+        id,
+        email: id === "admin" ? "admin@dj.com" : "samad.tab1@gmail.com",
+        password: "",
+        createdAt: new Date().toISOString()
+      };
+    }
+
     const { data } = await supabase
       .from("users")
       .select(USER_SELECT)
       .eq("id", id)
       .maybeSingle();
     return data;
+  }
+
+  async getTableCounts() {
+    const tables = ["users", "profiles", "notes", "donations", "rare_books", "events", "books_details", "contact_messages", "library_card_applications"];
+    const results: Record<string, number> = {};
+    for (const table of tables) {
+      try {
+        const { count } = await supabase.from(table).select("*", { count: "exact", head: true });
+        results[table] = count || 0;
+      } catch (err) {
+        results[table] = -1; // Error marker
+      }
+    }
+    return results;
   }
 
   async getUserByEmail(email: string) {
@@ -1149,6 +1172,75 @@ class DbStorage {
     return data;
   }
 
+  // --- Blog Methods ---
+  async getBlogPosts() {
+    const { data } = await supabase
+      .from("blog")
+      .select(BLOG_SELECT)
+      .order("created_at", { ascending: false });
+    return data || [];
+  }
+
+  async getBlogPost(idOrSlug: string) {
+    const isId = /^[0-9a-fA-F-]{36}$/.test(idOrSlug);
+    const query = supabase.from("blog").select(BLOG_SELECT);
+
+    if (isId) {
+      query.eq("id", idOrSlug);
+    } else {
+      query.eq("slug", idOrSlug);
+    }
+
+    const { data } = await query.maybeSingle();
+    return data;
+  }
+
+  async createBlogPost(post: any) {
+    const toInsert = toSnakeCase(post);
+    const { data, error } = await supabase
+      .from("blog")
+      .insert(toInsert)
+      .select(BLOG_SELECT)
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  async updateBlogPost(id: string, post: any) {
+    const toUpdate = toSnakeCase(post);
+    delete toUpdate.id;
+    toUpdate.updated_at = new Date().toISOString();
+
+    const { data, error } = await supabase
+      .from("blog")
+      .update(toUpdate)
+      .eq("id", id)
+      .select(BLOG_SELECT)
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  async deleteBlogPost(id: string) {
+    await supabase.from("blog").delete().eq("id", id);
+  }
+
+  async toggleBlogPostPin(id: string) {
+    const { data: post } = await supabase
+      .from("blog")
+      .select("is_pinned")
+      .eq("id", id)
+      .single();
+    if (!post) return;
+    const { data } = await supabase
+      .from("blog")
+      .update({ is_pinned: !post.is_pinned })
+      .eq("id", id)
+      .select(BLOG_SELECT)
+      .single();
+    return data;
+  }
+
   async uploadFile(bucket: string, file: any): Promise<string> {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     const filename =
@@ -1199,71 +1291,55 @@ class DbStorage {
     }
   }
 
-  async getBlogPosts(includeDrafts = false) {
-    let query = supabase.from("blog_posts").select(BLOG_SELECT);
-    if (!includeDrafts) query = query.eq("status", "published");
-    const { data } = await query
-      .order("is_pinned", { ascending: false })
-      .order("created_at", { ascending: false });
-    return data || [];
-  }
+  async getTableCounts() {
+    const tables = [
+      "users",
+      "profiles",
+      "contact_messages",
+      "book_borrows",
+      "library_card_applications",
+      "donations",
+      "notes",
+      "rare_books",
+      "books",
+      "events",
+      "notifications",
+      "blog",
+      "admin_credentials",
+    ];
 
-  async getBlogPost(slug: string) {
-    const { data } = await supabase
-      .from("blog_posts")
-      .select(BLOG_SELECT)
-      .eq("slug", slug)
-      .maybeSingle();
-    return data;
-  }
+    const counts: Record<string, number> = {};
 
-  async getBlogPostById(id: string) {
-    const { data } = await supabase
-      .from("blog_posts")
-      .select(BLOG_SELECT)
-      .eq("id", id)
-      .maybeSingle();
-    return data;
-  }
+    for (const table of tables) {
+      try {
+        const { count, error } = await supabase
+          .from(table)
+          .select("*", { count: "exact", head: true });
 
-  async createBlogPost(post: any) {
-    const toInsert = toSnakeCase(post);
-    const { data, error } = await supabase
-      .from("blog_posts")
-      .insert(toInsert)
-      .select(BLOG_SELECT)
-      .single();
-    if (error) throw error;
-    return data;
-  }
+        if (error) {
+          console.error(`Error counting table ${table}:`, error.message);
+          counts[table] = -1;
+        } else {
+          counts[table] = count || 0;
+        }
+      } catch (e: any) {
+        console.error(`Exception counting table ${table}:`, e.message);
+        counts[table] = -1;
+      }
+    }
 
-  async updateBlogPost(id: string, post: any) {
-    const toUpdate = toSnakeCase(post);
-    delete toUpdate.id;
-    toUpdate.updated_at = new Date().toISOString();
-    const { data, error } = await supabase
-      .from("blog_posts")
-      .update(toUpdate)
-      .eq("id", id)
-      .select(BLOG_SELECT)
-      .single();
-    if (error) throw error;
-    return data;
-  }
-
-  async deleteBlogPost(id: string) {
-    await supabase.from("blog_posts").delete().eq("id", id);
+    return counts;
   }
 
   async toggleBlogPostPin(id: string) {
     const { data: p } = await supabase
-      .from("blog_posts")
+      .from("blog")
       .select("is_pinned")
       .eq("id", id)
       .single();
     if (!p) return;
     const { data } = await supabase
-      .from("blog_posts")
+      .from("blog")
       .update({ is_pinned: !p.is_pinned })
       .eq("id", id)
       .select(BLOG_SELECT)

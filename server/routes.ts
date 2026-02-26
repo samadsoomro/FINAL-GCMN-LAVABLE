@@ -407,6 +407,203 @@ export function registerRoutes(app: Express): void {
     }
   });
 
+  // Diagnostic Debug Route
+  app.get("/api/admin/debug", requireAdmin, async (req, res) => {
+    try {
+      const counts = await storage.getTableCounts();
+      res.json({
+        status: "ok",
+        session: {
+          id: req.sessionID,
+          userId: req.session?.userId,
+          isAdmin: req.session?.isAdmin
+        },
+        counts
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // --- Books Management ---
+  app.get("/api/admin/books", requireAdmin, async (req, res) => {
+    try {
+      const books = await storage.getBooks();
+      res.json(books);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/books", requireAdmin, upload.single("bookImage"), async (req: MulterRequest, res) => {
+    try {
+      const { bookName, shortIntro, description, totalCopies } = req.body;
+      const bookData: any = {
+        bookName,
+        shortIntro,
+        description,
+        totalCopies: parseInt(totalCopies) || 1,
+        availableCopies: parseInt(totalCopies) || 1,
+      };
+
+      if (req.file) {
+        bookData.bookImage = await storage.uploadFile("books", req.file);
+      }
+
+      const book = await storage.createBook(bookData);
+      res.json(book);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/admin/books/:id", requireAdmin, upload.single("bookImage"), async (req: MulterRequest, res) => {
+    try {
+      const updateData: any = { ...req.body };
+      if (req.file) {
+        updateData.bookImage = await storage.uploadFile("books", req.file);
+      }
+      const book = await storage.updateBook(req.params.id, updateData);
+      res.json(book);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/admin/books/:id", requireAdmin, async (req, res) => {
+    try {
+      await storage.deleteBook(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // --- Blog Management ---
+  app.get("/api/admin/blog", requireAdmin, async (req, res) => {
+    try {
+      const posts = await storage.getBlogPosts();
+      res.json(posts);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/blog", requireAdmin, upload.single("featuredImage"), async (req: MulterRequest, res) => {
+    try {
+      const { title, slug, shortDescription, content, status } = req.body;
+      const postData: any = { title, slug, shortDescription, content, status: status || "draft" };
+
+      if (req.file) {
+        postData.featuredImage = await storage.uploadFile("blog", req.file);
+      }
+
+      const post = await storage.createBlogPost(postData);
+      res.json(post);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/admin/blog/:id", requireAdmin, upload.single("featuredImage"), async (req: MulterRequest, res) => {
+    try {
+      const updateData: any = { ...req.body };
+      if (req.file) {
+        updateData.featuredImage = await storage.uploadFile("blog", req.file);
+      }
+      const post = await storage.updateBlogPost(req.params.id, updateData);
+      res.json(post);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/admin/blog/:id", requireAdmin, async (req, res) => {
+    try {
+      await storage.deleteBlogPost(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/blog/:id/pin", requireAdmin, async (req, res) => {
+    try {
+      const post = await storage.toggleBlogPostPin(req.params.id);
+      res.json(post);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/blog/upload-image", requireAdmin, upload.single("image"), async (req: MulterRequest, res) => {
+    try {
+      if (!req.file) return res.status(400).json({ error: "No image provided" });
+      const url = await storage.uploadFile("blog-inline", req.file);
+      res.json({ url });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // --- Notifications Management ---
+  app.get("/api/admin/notifications", requireAdmin, async (req, res) => {
+    try {
+      const notifications = await storage.getNotifications();
+      res.json(notifications);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/notifications", requireAdmin, upload.single("image"), async (req: MulterRequest, res) => {
+    try {
+      const { title, message, pin } = req.body;
+      const notifData: any = {
+        title,
+        message,
+        pin: pin === "true",
+        status: "active"
+      };
+
+      if (req.file) {
+        notifData.image = await storage.uploadFile("notifications", req.file);
+      }
+
+      const notif = await storage.createNotification(notifData);
+      res.json(notif);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/admin/notifications/:id", requireAdmin, async (req, res) => {
+    try {
+      await storage.deleteNotification(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/admin/notifications/:id/status", requireAdmin, async (req, res) => {
+    try {
+      const notif = await storage.toggleNotificationStatus(req.params.id);
+      res.json(notif);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/admin/notifications/:id/pin", requireAdmin, async (req, res) => {
+    try {
+      const notif = await storage.toggleNotificationPin(req.params.id);
+      res.json(notif);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.delete("/api/admin/users/:id", requireAdmin, async (req, res) => {
     try {
       if (req.params.id === "1" || req.params.id === "admin") {
