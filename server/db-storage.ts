@@ -174,15 +174,23 @@ class DbStorage {
 
     try {
       const client = getSupabase();
-      const { error } = await client.from("users").select("id").limit(1);
-      if (error) {
-        console.error("Supabase connection error:", error);
-      } else {
-        console.log("Supabase connected successfully.");
-        await this.seedAdminCredentials();
-      }
+
+      // Run connection check in the background instead of blocking boot
+      client.from("users").select("id").limit(1).then(({ error }) => {
+        if (error) {
+          console.error("Supabase background connection error:", error);
+        } else {
+          console.log("Supabase connected successfully in background.");
+          this.seedAdminCredentials().catch(e =>
+            console.error("Failed to seed admin credentials:", e)
+          );
+        }
+      }).catch(e => {
+        console.error("Failed to initialize Supabase client background check:", e.message);
+      });
+
     } catch (e: any) {
-      console.error("Failed to initialize Supabase client:", e.message);
+      console.error("Synchronous setup error for Supabase:", e.message);
     }
   }
 

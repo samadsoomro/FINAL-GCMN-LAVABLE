@@ -15,10 +15,15 @@ export default async function handler(req: any, res: any) {
         return cachedApp(req, res);
     } catch (error: any) {
         console.error("[Vercel API] Fatal Error:", error);
-        res.setHeader("Content-Type", "application/json");
-        res.status(500).json({
-            error: error.message,
-            steps: "Error during lazy initialization on Vercel"
-        });
+
+        // Check if headers are already sent to prevent Double Error Crash
+        if (!res.headersSent) {
+            res.setHeader("Content-Type", "application/json");
+            res.status(500).json({
+                error: "A server error occurred during initialization.",
+                details: error?.message || String(error)
+            });
+        }
     }
 }
+

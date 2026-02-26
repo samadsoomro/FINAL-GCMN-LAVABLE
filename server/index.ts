@@ -111,7 +111,8 @@ export async function initApp() {
     }),
   );
 
-  await storage.init();
+  // Initialize database in the background (prevent Serverless timeout crash)
+  storage.init().catch(console.error);
   registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
