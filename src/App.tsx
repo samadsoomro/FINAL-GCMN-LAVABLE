@@ -185,7 +185,14 @@ const AnimatedRoutes = () => {
             </PageTransition>
           }
         />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route
+          path="/admin-dashboard"
+          element={
+            <ProtectedRoute requireAdmin>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/admin/books-details"

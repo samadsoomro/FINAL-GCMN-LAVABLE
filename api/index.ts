@@ -14,6 +14,9 @@ app.use(express.json({ limit: "1024mb" }));
 app.use(express.urlencoded({ extended: false, limit: "1024mb" }));
 app.use(compression());
 
+// Trust proxy for Vercel (required for secure cookies)
+app.set("trust proxy", 1);
+
 const isProduction = process.env.NODE_ENV === "production";
 
 // Build the session store:
@@ -39,7 +42,7 @@ async function buildSessionStore(): Promise<session.Store> {
 
       const store = new PgSession({
         pool,
-        createTableIfMissing: false,
+        createTableIfMissing: true,
         tableName: "sessions",
         schemaName: "public"
       });
@@ -98,10 +101,11 @@ async function initServerlessApp() {
         maxAge: 86400000,
         secure: isProduction,
         httpOnly: true,
-        sameSite: isProduction ? "none" : "lax",
+        sameSite: isProduction ? "lax" : "lax", // Lax is more compatible for direct subdomain access
       },
       store,
-      resave: false,
+      resave: true, // Required for persistent serverless sessions
+      rolling: true, // Refresh cookie on every request
       saveUninitialized: false,
       secret: process.env.SESSION_SECRET || "gcfm-library-secret-2026",
     }),

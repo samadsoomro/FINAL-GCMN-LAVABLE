@@ -161,10 +161,17 @@ export function registerRoutes(app: Express): void {
             console.log(`[AUTH] Admin login SUCCESS for: ${email} (${adminCreds.role})`);
             req.session.userId = adminCreds.role === "developer" ? "developer-admin" : "admin";
             req.session.isAdmin = true;
-            return res.json({
-              user: { id: adminCreds.id, email: adminCreds.adminEmail },
-              isAdmin: true,
-              redirect: "/admin-dashboard",
+
+            return req.session.save((err) => {
+              if (err) {
+                console.error("[AUTH] Session save error:", err);
+                return res.status(500).json({ error: "Failed to save session" });
+              }
+              return res.json({
+                user: { id: adminCreds.id, email: adminCreds.adminEmail },
+                isAdmin: true,
+                redirect: "/admin-dashboard",
+              });
             });
           } else {
             console.log(
@@ -236,17 +243,22 @@ export function registerRoutes(app: Express): void {
           return res.status(401).json({ error: "Library card is not active." });
         }
 
-        // Use library card ID as session identifier (prefix with "card-" to distinguish from regular users)
         req.session.userId = `card-${cardApp.id}`;
         req.session.isAdmin = false;
         req.session.isLibraryCard = true;
 
-        return res.json({
-          user: {
-            id: cardApp.id,
-            email: cardApp.email,
-            name: `${cardApp.firstName} ${cardApp.lastName}`,
-          },
+        return req.session.save((err) => {
+          if (err) {
+            console.error("[AUTH] Session save error:", err);
+            return res.status(500).json({ error: "Failed to save session" });
+          }
+          return res.json({
+            user: {
+              id: cardApp.id,
+              email: cardApp.email,
+              name: `${cardApp.firstName} ${cardApp.lastName}`,
+            },
+          });
         });
       }
 
@@ -264,7 +276,13 @@ export function registerRoutes(app: Express): void {
       req.session.userId = user.id;
       req.session.isAdmin = false;
 
-      res.json({ user: { id: user.id, email: user.email } });
+      return req.session.save((err) => {
+        if (err) {
+          console.error("[AUTH] Session save error:", err);
+          return res.status(500).json({ error: "Failed to save session" });
+        }
+        res.json({ user: { id: user.id, email: user.email } });
+      });
     } catch (error: any) {
       console.error("[Login Error]:", error);
       res.status(500).json({
