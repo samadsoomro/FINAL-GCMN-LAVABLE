@@ -1,26 +1,22 @@
 {
     "buildCommand": "npm run build",
     "outputDirectory": "dist/public",
+    "installCommand": "npm install",
     "env": {
         "VERCEL_BUILD_SKIP_TYPE_CHECK": "1"
     },
-    "routes": [
+    "rewrites": [
         {
-            "src": "/api/(.*)",
-            "dest": "/api/index.ts"
+            "source": "/api/(.*)",
+            "destination": "/api/index.ts"
         },
         {
-            "src": "/server/uploads/(.*)",
-            "dest": "/api/index.ts"
+            "source": "/server/uploads/(.*)",
+            "destination": "/api/index.ts"
         },
         {
-            "src": "/(.*)",
-            "dest": "/index.html"
+            "source": "/(.*)",
+            "destination": "/index.html"
         }
-    ],
-    "functions": {
-        "api/index.ts": {
-            "includeFiles": "server/**"
-        }
-    }
+    ]
 }
