@@ -1,11 +1,18 @@
 import express, { type Request, Response, NextFunction } from "express";
-import session from "express-session";
 import { createServer } from "http";
 import path from "path";
 import { registerRoutes } from "./routes.js";
 import { log } from "./log.js";
+
+process.on("uncaughtException", (err) => {
+  log(`UNCAUGHT EXCEPTION: ${err.message}`, "process");
+  console.error(err.stack);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  log(`UNHANDLED REJECTION: ${reason}`, "process");
+});
 import { storage } from "./db-storage.js";
-import compression from "compression";
 
 declare module "express-session" {
   interface SessionData {
@@ -18,7 +25,7 @@ declare module "express-session" {
 export const app = express();
 app.use(express.json({ limit: "1024mb" }));
 app.use(express.urlencoded({ extended: false, limit: "1024mb" }));
-app.use(compression());
+// app.use(compression());
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -94,22 +101,36 @@ export async function initApp() {
   if (initialized) return app;
   initialized = true;
 
-  // Set up session middleware
-  const store = await buildSessionStore();
-  app.use(
-    session({
-      cookie: {
-        maxAge: 86400000,
-        secure: isProduction,
-        httpOnly: true,
-        sameSite: isProduction ? "none" : "lax",
-      },
-      store,
-      resave: false,
-      saveUninitialized: false,
-      secret: process.env.SESSION_SECRET || "gcfm-library-secret-2026",
-    }),
-  );
+  // Custom minimal session store to avoid express-session native crashes on Node 24
+  const sessionStore: Record<string, any> = {};
+  app.use((req: any, res, next) => {
+    // Simple cookie parser for session ID
+    let sessionId = "";
+    const cookieHeader = req.headers.cookie || "";
+    const match = cookieHeader.match(/custom_sid=([^;]+)/);
+    if (match) {
+      sessionId = match[1];
+    } else {
+      sessionId = Math.random().toString(36).substring(2);
+      res.setHeader("Set-Cookie", `custom_sid=${sessionId}; Path=/; HttpOnly`);
+    }
+
+    if (!sessionStore[sessionId]) {
+      sessionStore[sessionId] = {};
+    }
+    req.session = sessionStore[sessionId];
+
+    // Polyfill destroy and save for compatibility with existing code
+    req.session.destroy = (cb: any) => {
+      sessionStore[sessionId] = {};
+      if (cb) cb();
+    };
+    req.session.save = (cb: any) => {
+      if (cb) cb();
+    };
+
+    next();
+  });
 
   await storage.init();
   registerRoutes(app);
@@ -125,7 +146,8 @@ export async function initApp() {
   app.use("/server/uploads", express.static(uploadDir));
 
   // Vercel / Production static fallback
-  if (process.env.NODE_ENV !== "development" || !!process.env.VERCEL) {
+  // Always serve static for now to avoid Vite dev server crashes on Node 24
+  if (true || process.env.NODE_ENV !== "development" || !!process.env.VERCEL) {
     const { serveStatic } = await import("./vite.js");
     serveStatic(app);
   }
@@ -143,15 +165,30 @@ if (!isServerless) {
     server.keepAliveTimeout = 65000;
     server.headersTimeout = 66000;
 
+    /*
     if (application.get("env") === "development") {
-      const { setupVite } = await import("./vite.js");
-      await setupVite(application, server);
+      log("Initializing Vite setup...", "express");
+      try {
+        const { setupVite } = await import("./vite.js");
+        await setupVite(application, server);
+        log("Vite setup completed successfully.", "express");
+      } catch (viteError: any) {
+        log(`CRITICAL: Vite setup failed: ${viteError.message}`, "express");
+        process.exit(1);
+      }
     }
+    */
 
     const port = parseInt(process.env.PORT || "5000", 10);
-    server.listen({ port, host: "0.0.0.0" }, () => {
-      log(`serving on port ${port}`);
-      console.log(`[Server] Started at ${new Date().toISOString()}`);
-    });
+    log(`Attempting to listen on port ${port}...`, "express");
+    try {
+      server.listen({ port, host: "0.0.0.0" }, () => {
+        log(`successfully serving on port ${port}`);
+        console.log(`[Server] Started at ${new Date().toISOString()}`);
+      });
+    } catch (listenError: any) {
+      log(`CRITICAL: Server failed to listen: ${listenError.message}`, "express");
+      process.exit(1);
+    }
   })();
 }

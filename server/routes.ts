@@ -60,7 +60,7 @@ const upload = multer({
 });
 
 // No hardcoded credentials
-const ADMIN_EMAIL = "admin@dj.com";
+const ADMIN_EMAIL = "admin@formen.com";
 
 declare module "express-session" {
   interface SessionData {

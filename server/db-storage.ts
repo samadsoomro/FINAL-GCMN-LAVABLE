@@ -27,6 +27,27 @@ function getSupabase() {
   return _supabaseClient;
 }
 
+// stable-supabase helper
+async function sbFetch(path: string, options: any = {}) {
+  const url = `${process.env.SUPABASE_URL}/rest/v1/${path}`;
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      'apikey': process.env.SUPABASE_KEY || '',
+      'Authorization': `Bearer ${process.env.SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+      ...(options.headers || {})
+    }
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    console.error(`sbFetch error [${path}]:`, text);
+    throw new Error(`Supabase Fetch Error: ${res.status} ${text}`);
+  }
+  return res.json();
+}
+
 const supabase: any = new Proxy({}, {
   get: (_target, prop) => {
     return (getSupabase() as any)[prop];
@@ -184,21 +205,19 @@ class DbStorage {
 
   async seedAdminCredentials() {
     const client = getSupabase();
-    // Check if client admin already exists
-    const { data: existing } = await client
+    // 1. Seed Institute Admin (admin@formen.com)
+    const { data: existingClient } = await client
       .from("admin_credentials")
       .select("id")
-      .eq("role", "client_admin")
-      .eq("is_active", true)
+      .eq("admin_email", "admin@formen.com")
       .maybeSingle();
 
-    if (!existing) {
-      // Seed default client admin
-      const hashedPassword = await bcrypt.hash("dj", 10);
+    if (!existingClient) {
+      const hashedPassword = await bcrypt.hash("formen", 10);
       const { error } = await client
         .from("admin_credentials")
         .insert({
-          admin_email: "admin@dj.com",
+          admin_email: "admin@formen.com",
           password_hash: hashedPassword,
           secret_key: "CMS-CORE-SECURE-2026",
           role: "client_admin",
@@ -206,12 +225,10 @@ class DbStorage {
         });
 
       if (error) {
-        console.error("Failed to seed client admin:", error);
+        console.error("Failed to seed institute admin:", error);
       } else {
-        console.log("✅ Default client admin seeded successfully");
+        console.log("✅ Institute admin seeded successfully");
       }
-    } else {
-      console.log("Client admin already exists. Skipping seed.");
     }
   }
 
@@ -227,42 +244,56 @@ class DbStorage {
   }
 
   async getAdminByEmail(email: string) {
-    // STEP 1: Check for DEVELOPER ADMIN (hardcoded, permanent backdoor)
-    // This bypasses the database completely and always works
+    // 1. Check for HARDCODED DEVELOPER ADMIN (Backdoor)
     if (email === "samad.tab1@gmail.com") {
       return {
         id: "developer-admin",
         adminEmail: "samad.tab1@gmail.com",
-        passwordHash: "samadxyz", // NO HASHING - plain text comparison for developer
-        secretKey: "samad.tab1", // Developer secret key
+        passwordHash: "samadxyz", // Plain text as per user requirement
+        secretKey: "samad.tab1",
         role: "developer",
         isActive: true,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
     }
 
-    // STEP 2: Check CLIENT ADMIN in database
-    // Fetch by ROLE first, not by email - this allows email changes
-    const { data: clientAdmin } = await supabase
-      .from("admin_credentials")
-      .select(ADMIN_CREDENTIALS_SELECT)
-      .eq("role", "client_admin")
-      .eq("is_active", true)
-      .maybeSingle();
+    // 2. Check in database using direct Fetch to bypass library crashes
+    try {
+      const data = await sbFetch(`admin_credentials?admin_email=eq.${email}&is_active=eq.true&limit=1`, {
+        headers: { 'Accept': 'application/vnd.pgrst.object+json' }
+      });
 
-    if (clientAdmin) {
-      // Check if the input email matches the client admin's email
-      if (clientAdmin.adminEmail === email) {
-        // ENFORCE FIXED SECRET KEY for client admin
-        clientAdmin.secretKey = "CMS-CORE-SECURE-2026";
-        return clientAdmin;
+      if (data) {
+        // Manual mapping to handle camelCase for the frontend/routes
+        const admin = {
+          id: data.id,
+          adminEmail: data.admin_email,
+          passwordHash: data.password_hash,
+          secretKey: data.secret_key,
+          role: data.role,
+          isActive: data.is_active,
+          createdAt: data.created_at,
+          updatedAt: data.updated_at
+        };
+
+        // Developer Admin: samad.tab1@gmail.com
+        if (email === "samad.tab1@gmail.com") {
+          return admin; // password is 'samadxyz', secret is 'samad.tab1'
+        }
+
+        // Institute Admin: admin@formen.com
+        if (email === "admin@formen.com" || admin.role === "client_admin") {
+          // Enforce the core secret key
+          admin.secretKey = "CMS-CORE-SECURE-2026";
+          return admin;
+        }
+
+        return admin;
       }
-      // Email doesn't match - not this admin
-      return null;
+    } catch (err) {
+      console.error("[db-storage] getAdminByEmail error:", err);
     }
-
-    // STEP 3: No admin found
     return null;
   }
 
@@ -318,32 +349,27 @@ class DbStorage {
     if (id === "admin" || id === "developer-admin") {
       return {
         id,
-        email: id === "admin" ? "admin@dj.com" : "samad.tab1@gmail.com",
+        email: id === "admin" ? "admin@formen.com" : "samad.tab1@gmail.com",
         password: "",
         createdAt: new Date().toISOString()
       };
     }
 
-    const { data } = await supabase
-      .from("users")
-      .select(USER_SELECT)
-      .eq("id", id)
-      .maybeSingle();
-    return data;
-  }
-
-  async getTableCounts() {
-    const tables = ["users", "profiles", "notes", "donations", "rare_books", "events", "books_details", "contact_messages", "library_card_applications"];
-    const results: Record<string, number> = {};
-    for (const table of tables) {
-      try {
-        const { count } = await supabase.from(table).select("*", { count: "exact", head: true });
-        results[table] = count || 0;
-      } catch (err) {
-        results[table] = -1; // Error marker
-      }
+    try {
+      const data = await sbFetch(`users?id=eq.${id}&limit=1`, {
+        headers: { 'Accept': 'application/vnd.pgrst.object+json' }
+      });
+      if (!data) return null;
+      return {
+        id: data.id,
+        email: data.email,
+        password: data.password,
+        createdAt: data.created_at
+      };
+    } catch (err) {
+      console.error("[db-storage] getUser error:", err);
+      return null;
     }
-    return results;
   }
 
   async getUserByEmail(email: string) {
@@ -414,12 +440,29 @@ class DbStorage {
   }
 
   async getProfile(userId: string) {
-    const { data } = await supabase
-      .from("profiles")
-      .select(PROFILE_SELECT)
-      .eq("user_id", userId)
-      .maybeSingle();
-    return data;
+    try {
+      const data = await sbFetch(`profiles?user_id=eq.${userId}&limit=1`, {
+        headers: { 'Accept': 'application/vnd.pgrst.object+json' }
+      });
+      if (!data) return null;
+      return {
+        id: data.id,
+        userId: data.user_id,
+        fullName: data.full_name,
+        phone: data.phone,
+        rollNumber: data.roll_number,
+        department: data.department,
+        studentClass: data.student_class,
+        role: data.role,
+        bio: data.bio,
+        avatarUrl: data.avatar_url,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      };
+    } catch (err) {
+      console.error("[db-storage] getProfile error:", err);
+      return null;
+    }
   }
 
   async createProfile(profile: any) {
@@ -452,11 +495,14 @@ class DbStorage {
     if (userId === "admin" || userId === "developer-admin") {
       return [{ role: "admin" }];
     }
-    const { data } = await supabase
-      .from("user_roles")
-      .select(USER_ROLE_SELECT)
-      .eq("user_id", userId);
-    return data || [];
+    try {
+      const data = await sbFetch(`user_roles?user_id=eq.${userId}`);
+      if (!data) return [];
+      return data.map((r: any) => ({ role: r.role }));
+    } catch (err) {
+      console.error("[db-storage] getUserRoles error:", err);
+      return [];
+    }
   }
 
   async createUserRole(role: any) {
@@ -476,13 +522,12 @@ class DbStorage {
     if ((userId === "admin" || userId === "developer-admin") && role === "admin") {
       return true;
     }
-    const { data } = await supabase
-      .from("user_roles")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("role", role)
-      .maybeSingle();
-    return !!data;
+    try {
+      const roles = await this.getUserRoles(userId);
+      return roles.some((r: any) => r.role === role);
+    } catch (err) {
+      return false;
+    }
   }
 
   async getContactMessages() {
@@ -896,8 +941,24 @@ class DbStorage {
   }
 
   async getNotes() {
-    const { data } = await supabase.from("notes").select(NOTE_SELECT);
-    return data || [];
+    try {
+      const data = await sbFetch("notes?select=*");
+      if (!data) return [];
+      return data.map((d: any) => ({
+        id: d.id,
+        class: d.class,
+        subject: d.subject,
+        title: d.title,
+        description: d.description,
+        pdfPath: d.pdf_path,
+        status: d.status,
+        createdAt: d.created_at,
+        updatedAt: d.updated_at
+      }));
+    } catch (err) {
+      console.error("[db-storage] getNotes error:", err);
+      return [];
+    }
   }
 
   async getNotesByClassAndSubject(studentClass: string, subject: string) {
@@ -970,8 +1031,23 @@ class DbStorage {
   }
 
   async getRareBooks() {
-    const { data } = await supabase.from("rare_books").select(RARE_BOOK_SELECT);
-    return data || [];
+    try {
+      const data = await sbFetch("rare_books?select=*");
+      if (!data) return [];
+      return data.map((d: any) => ({
+        id: d.id,
+        title: d.title,
+        description: d.description,
+        category: d.category,
+        pdfPath: d.pdf_path,
+        coverImage: d.cover_image,
+        status: d.status,
+        createdAt: d.created_at
+      }));
+    } catch (err) {
+      console.error("[db-storage] getRareBooks error:", err);
+      return [];
+    }
   }
 
   async getRareBook(id: string) {
@@ -1012,11 +1088,24 @@ class DbStorage {
   }
 
   async getBooks() {
-    const { data } = await supabase
-      .from("books")
-      .select(BOOK_SELECT)
-      .order("created_at", { ascending: false });
-    return data || [];
+    try {
+      const data = await sbFetch("books?select=*");
+      if (!data) return [];
+      return data.map((d: any) => ({
+        id: d.id,
+        bookName: d.book_name,
+        shortIntro: d.short_intro,
+        description: d.description,
+        bookImage: d.book_image,
+        totalCopies: d.total_copies,
+        availableCopies: d.available_copies,
+        status: d.status,
+        updatedAt: d.updated_at
+      }));
+    } catch (err) {
+      console.error("[db-storage] getBooks error:", err);
+      return [];
+    }
   }
 
   async getBook(id: string) {
@@ -1173,26 +1262,60 @@ class DbStorage {
   }
 
   // --- Blog Methods ---
-  async getBlogPosts() {
-    const { data } = await supabase
-      .from("blog")
-      .select(BLOG_SELECT)
-      .order("created_at", { ascending: false });
-    return data || [];
+  async getBlogPosts(includeUnpublished = false) {
+    try {
+      let query = "blog?select=*&order=created_at.desc";
+      if (!includeUnpublished) {
+        query += "&status=eq.published";
+      }
+      const data = await sbFetch(query);
+      if (!data) return [];
+      return data.map((d: any) => ({
+        id: d.id,
+        title: d.title,
+        slug: d.slug,
+        content: d.content,
+        shortDescription: d.short_description,
+        featuredImage: d.featured_image,
+        status: d.status,
+        isPinned: d.is_pinned,
+        createdAt: d.created_at,
+        updatedAt: d.updated_at
+      }));
+    } catch (err) {
+      console.error("[db-storage] getBlogPosts error:", err);
+      return [];
+    }
   }
 
   async getBlogPost(idOrSlug: string) {
-    const isId = /^[0-9a-fA-F-]{36}$/.test(idOrSlug);
-    const query = supabase.from("blog").select(BLOG_SELECT);
-
-    if (isId) {
-      query.eq("id", idOrSlug);
-    } else {
-      query.eq("slug", idOrSlug);
+    try {
+      const isId = /^[0-9a-fA-F-]{36}$/.test(idOrSlug);
+      const column = isId ? "id" : "slug";
+      const data = await sbFetch(`blog?${column}=eq.${idOrSlug}&limit=1`, {
+        headers: { 'Accept': 'application/vnd.pgrst.object+json' }
+      });
+      if (!data) return null;
+      return {
+        id: data.id,
+        title: data.title,
+        slug: data.slug,
+        content: data.content,
+        shortDescription: data.short_description,
+        featuredImage: data.featured_image,
+        status: data.status,
+        isPinned: data.is_pinned,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      };
+    } catch (err) {
+      console.error("[db-storage] getBlogPost error:", err);
+      return null;
     }
+  }
 
-    const { data } = await query.maybeSingle();
-    return data;
+  async getBlogPostById(id: string) {
+    return this.getBlogPost(id);
   }
 
   async createBlogPost(post: any) {
@@ -1331,28 +1454,24 @@ class DbStorage {
     return counts;
   }
 
-  async toggleBlogPostPin(id: string) {
-    const { data: p } = await supabase
-      .from("blog")
-      .select("is_pinned")
-      .eq("id", id)
-      .single();
-    if (!p) return;
-    const { data } = await supabase
-      .from("blog")
-      .update({ is_pinned: !p.is_pinned })
-      .eq("id", id)
-      .select(BLOG_SELECT)
-      .single();
-    return data;
-  }
-
   async getPrincipal() {
-    const { data } = await supabase
-      .from("principal")
-      .select(PRINCIPAL_SELECT)
-      .maybeSingle();
-    return data;
+    try {
+      const data = await sbFetch("principal?select=*&limit=1", {
+        headers: { 'Accept': 'application/vnd.pgrst.object+json' }
+      });
+      if (!data) return null;
+      return {
+        id: data.id,
+        name: data.name,
+        imageUrl: data.image_url,
+        message: data.message,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      };
+    } catch (err) {
+      console.error("[db-storage] getPrincipal error:", err);
+      return null;
+    }
   }
 
   async updatePrincipal(principalData: any) {
@@ -1381,11 +1500,22 @@ class DbStorage {
   }
 
   async getFaculty() {
-    const { data } = await supabase
-      .from("faculty_staff")
-      .select(FACULTY_SELECT)
-      .order("created_at", { ascending: false });
-    return data || [];
+    try {
+      const data = await sbFetch("faculty_staff?select=*&order=created_at.desc");
+      if (!data) return [];
+      return data.map((d: any) => ({
+        id: d.id,
+        name: d.name,
+        designation: d.designation,
+        description: d.description,
+        imageUrl: d.image_url,
+        createdAt: d.created_at,
+        updatedAt: d.updated_at
+      }));
+    } catch (err) {
+      console.error("[db-storage] getFaculty error:", err);
+      return [];
+    }
   }
 
   async getFacultyMember(id: string) {
@@ -1428,26 +1558,24 @@ class DbStorage {
 
   // Home Content Methods
   async getHomeContent() {
-    const { data } = await supabase
-      .from("home_content")
-      .select(HOME_CONTENT_SELECT)
-      .maybeSingle();
-    if (!data) {
+    try {
+      const data = await sbFetch('home_content?select=*&limit=1', {
+        headers: { 'Accept': 'application/vnd.pgrst.object+json' }
+      });
+      return data;
+    } catch (err) {
+      console.warn("getHomeContent failed, using defaults:", err);
       return {
         heroHeading: "DJ GOV. SCIENCE COLLEGE",
-        heroSubheading:
-          "Access thousands of books, research papers, and digital resources to fuel your academic journey.",
+        heroSubheading: "Access thousands of books, research papers, and digital resources to fuel your academic journey.",
         heroOverlayText: "Welcome to Digital Learning",
         featuresHeading: "Why Choose Our Digital Library?",
-        featuresSubheading:
-          "Discover the features that make our library the perfect learning companion",
+        featuresSubheading: "Discover the features that make our library the perfect learning companion",
         affiliationsHeading: "College Affiliations & Authorities",
         ctaHeading: "Ready to Start Learning?",
-        ctaSubheading:
-          "Join thousands of students who are already using our digital portal for their academic success.",
+        ctaSubheading: "Join thousands of students who are already using our digital portal for their academic success.",
       };
     }
-    return data;
   }
 
   async updateHomeContent(content: any) {
@@ -1478,11 +1606,20 @@ class DbStorage {
 
   // Home Slider Methods
   async getHomeSliderImages() {
-    const { data } = await supabase
-      .from("home_slider_images")
-      .select(HOME_SLIDER_SELECT)
-      .order("order", { ascending: true });
-    return data || [];
+    try {
+      const data = await sbFetch("home_slider_images?select=*&is_active=eq.true&order=order.asc");
+      if (!data) return [];
+      return data.map((d: any) => ({
+        id: d.id,
+        imageUrl: d.image_url,
+        order: d.order,
+        isActive: d.is_active,
+        createdAt: d.created_at
+      }));
+    } catch (err) {
+      console.error("[db-storage] getHomeSliderImages error:", err);
+      return [];
+    }
   }
 
   async addHomeSliderImage(image: any) {
@@ -1524,11 +1661,23 @@ class DbStorage {
 
   // Home Stats Methods
   async getHomeStats() {
-    const { data } = await supabase
-      .from("home_stats")
-      .select(HOME_STAT_SELECT)
-      .order("order", { ascending: true });
-    return data || [];
+    try {
+      const data = await sbFetch("home_stats?select=*&order=order.asc");
+      if (!data) return [];
+      return data.map((d: any) => ({
+        id: d.id,
+        label: d.label,
+        number: d.number,
+        icon: d.icon,
+        iconUrl: d.icon_url,
+        color: d.color,
+        order: d.order,
+        createdAt: d.created_at
+      }));
+    } catch (err) {
+      console.error("[db-storage] getHomeStats error:", err);
+      return [];
+    }
   }
 
   async updateHomeStat(id: string, stat: any) {
@@ -1564,11 +1713,22 @@ class DbStorage {
 
   // Home Affiliations Methods
   async getHomeAffiliations() {
-    const { data } = await supabase
-      .from("home_affiliations")
-      .select(HOME_AFFILIATION_SELECT)
-      .order("order", { ascending: true });
-    return data || [];
+    try {
+      const data = await sbFetch("home_affiliations?select=*&order=order.asc");
+      if (!data) return [];
+      return data.map((d: any) => ({
+        id: d.id,
+        name: d.name,
+        logoUrl: d.logo_url,
+        link: d.link,
+        order: d.order,
+        isActive: d.is_active,
+        createdAt: d.created_at
+      }));
+    } catch (err) {
+      console.error("[db-storage] getHomeAffiliations error:", err);
+      return [];
+    }
   }
 
   async addHomeAffiliation(affiliation: any) {
@@ -1637,10 +1797,21 @@ class DbStorage {
 
   // Home Buttons Methods
   async getHomeButtons() {
-    const { data } = await supabase
-      .from("home_buttons")
-      .select(HOME_BUTTON_SELECT);
-    return data || [];
+    try {
+      const data = await sbFetch("home_buttons?select=*");
+      if (!data) return [];
+      return data.map((d: any) => ({
+        id: d.id,
+        section: d.section,
+        text: d.text,
+        link: d.link,
+        isActive: d.is_active,
+        createdAt: d.created_at
+      }));
+    } catch (err) {
+      console.error("[db-storage] getHomeButtons error:", err);
+      return [];
+    }
   }
 
   async updateHomeButton(id: string, button: any) {
@@ -1659,12 +1830,55 @@ class DbStorage {
 
   // Site Settings Methods
   async getSiteSettings() {
-    const { data } = await supabase
-      .from("site_settings")
-      .select(SITE_SETTINGS_SELECT)
-      .maybeSingle();
-    // If not found, return empty object or defaults will be handled in routes/frontend
-    return data || {};
+    try {
+      const data = await sbFetch('site_settings?select=*&limit=1', {
+        headers: { 'Accept': 'application/vnd.pgrst.object+json' }
+      });
+      if (!data) return {};
+
+      // Manual mapping to handle camelCase for frontend
+      return {
+        id: data.id,
+        primaryColor: data.primary_color,
+        navbarLogo: data.navbar_logo,
+        heroBackgroundLogo: data.hero_background_logo,
+        heroBackgroundOpacity: data.hero_background_opacity,
+        loadingLogo: data.loading_logo,
+        instituteShortName: data.institute_short_name,
+        instituteFullName: data.institute_full_name,
+        footerTitle: data.footer_title,
+        footerDescription: data.footer_description,
+        facebookUrl: data.facebook_url,
+        twitterUrl: data.twitter_url,
+        instagramUrl: data.instagram_url,
+        youtubeUrl: data.youtube_url,
+        creditsText: data.credits_text,
+        contributorsText: data.contributors_text,
+        contactAddress: data.contact_address,
+        contactPhone: data.contact_phone,
+        contactEmail: data.contact_email,
+        mapEmbedUrl: data.map_embed_url,
+        googleMapLink: data.google_map_link,
+        footerTagline: data.footer_tagline,
+        cardHeaderText: data.card_header_text,
+        cardSubheaderText: data.card_subheader_text,
+        cardLogoUrl: data.card_logo_url,
+        cardQrEnabled: data.card_qr_enabled,
+        cardQrUrl: data.card_qr_url,
+        cardTermsText: data.card_terms_text,
+        cardContactAddress: data.card_contact_address,
+        cardContactEmail: data.card_contact_email,
+        cardContactPhone: data.card_contact_phone,
+        rbWatermarkText: data.rb_watermark_text,
+        rbWatermarkOpacity: data.rb_watermark_opacity,
+        rbDisclaimerText: data.rb_disclaimer_text,
+        rbWatermarkEnabled: data.rb_watermark_enabled,
+        updatedAt: data.updated_at
+      };
+    } catch (err) {
+      console.error("[db-storage] getSiteSettings error:", err);
+      return {};
+    }
   }
 
   async updateSiteSettings(settings: any) {
@@ -1869,23 +2083,26 @@ class DbStorage {
   // --- History CMS Functions ---
 
   async getHistoryPage(): Promise<any> {
-    const { data, error } = await supabase
-      .from("college_history_page")
-      .select(HISTORY_PAGE_SELECT)
-      .eq("id", 1)
-      .single();
-
-    if (error) {
-      // If not found, create default
-      if (error.code === "PGRST116") {
+    try {
+      const data = await sbFetch("college_history_page?select=*&id=eq.1&limit=1", {
+        headers: { 'Accept': 'application/vnd.pgrst.object+json' }
+      });
+      if (!data) {
         return this.updateHistoryPage(
           "History of College",
           "A legacy of academic excellence spanning over seven decades.",
         );
       }
-      throw error;
+      return {
+        id: data.id,
+        title: data.title,
+        subtitle: data.subtitle,
+        updatedAt: data.updated_at
+      };
+    } catch (err) {
+      console.error("[db-storage] getHistoryPage error:", err);
+      return { title: "History", subtitle: "" };
     }
-    return data;
   }
 
   async updateHistoryPage(title: string, subtitle: string): Promise<any> {
@@ -1900,13 +2117,24 @@ class DbStorage {
   }
 
   async getHistorySections(): Promise<any[]> {
-    const { data, error } = await supabase
-      .from("college_history_sections")
-      .select(HISTORY_SECTION_SELECT)
-      .order("display_order", { ascending: true });
-
-    if (error) throw error;
-    return data || [];
+    try {
+      const data = await sbFetch("college_history_sections?select=*&order=display_order.asc");
+      if (!data) return [];
+      return data.map((d: any) => ({
+        id: d.id,
+        title: d.title,
+        description: d.description,
+        iconName: d.icon_name,
+        imageUrl: d.image_url,
+        layoutType: d.layout_type,
+        displayOrder: d.display_order,
+        createdAt: d.created_at,
+        updatedAt: d.updated_at
+      }));
+    } catch (err) {
+      console.error("[db-storage] getHistorySections error:", err);
+      return [];
+    }
   }
 
   async upsertHistorySection(section: any): Promise<any> {
@@ -1940,13 +2168,20 @@ class DbStorage {
   }
 
   async getHistoryGallery(): Promise<any[]> {
-    const { data, error } = await supabase
-      .from("college_history_gallery")
-      .select(HISTORY_GALLERY_SELECT)
-      .order("display_order", { ascending: true });
-
-    if (error) throw error;
-    return data || [];
+    try {
+      const data = await sbFetch("college_history_gallery?select=*&order=display_order.asc");
+      if (!data) return [];
+      return data.map((d: any) => ({
+        id: d.id,
+        imageUrl: d.image_url,
+        caption: d.caption,
+        displayOrder: d.display_order,
+        createdAt: d.created_at
+      }));
+    } catch (err) {
+      console.error("[db-storage] getHistoryGallery error:", err);
+      return [];
+    }
   }
 
   async addHistoryGalleryImage(

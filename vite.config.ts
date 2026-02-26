@@ -15,8 +15,19 @@ export default defineConfig({
   },
   server: {
     allowedHosts: true,
+    proxy: {
+      "/api": {
+        target: "http://localhost:5002",
+        changeOrigin: true,
+      },
+      "/server/uploads": {
+        target: "http://localhost:5002",
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     outDir: "dist/public",
+    emptyOutDir: true,
   },
 });
