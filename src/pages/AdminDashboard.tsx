@@ -98,7 +98,7 @@ export default function AdminDashboard() {
   const [blogForm, setBlogForm] = useState({ title: "", content: "" }); // Placeholder if needed, but AdminBlog handles its own state
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
-  const { logout, isAdmin } = useAuth();
+  const { logout, isAdmin, loading: authLoading } = useAuth();
   const { settings } = useBranding();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -132,14 +132,14 @@ export default function AdminDashboard() {
   );
 
   useEffect(() => {
-    if (!loading) {
+    if (!authLoading) {
       if (!isAdmin) {
         navigate("/login");
       } else {
         fetchMessages();
       }
     }
-  }, [isAdmin, loading, navigate]);
+  }, [isAdmin, authLoading, navigate]);
 
   const fetchMessages = async () => {
     try {
@@ -1357,8 +1357,8 @@ export default function AdminDashboard() {
                   key={module.id}
                   onClick={() => handleModuleChange(module.id)}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group ${isActive
-                      ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20"
-                      : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
+                    ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20"
+                    : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
                     }`}
                 >
                   <div className="flex items-center gap-3">
@@ -1379,8 +1379,8 @@ export default function AdminDashboard() {
                   {module.count > 0 && (
                     <span
                       className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${isActive
-                          ? "bg-primary text-white"
-                          : "bg-neutral-100 text-neutral-400"
+                        ? "bg-primary text-white"
+                        : "bg-neutral-100 text-neutral-400"
                         }`}
                     >
                       {module.count}
@@ -1404,8 +1404,8 @@ export default function AdminDashboard() {
                   key={module.id}
                   onClick={() => handleModuleChange(module.id)}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group ${isActive
-                      ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20"
-                      : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
+                    ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20"
+                    : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
                     }`}
                 >
                   <div className="flex items-center gap-3">
@@ -1441,8 +1441,8 @@ export default function AdminDashboard() {
                   key={module.id}
                   onClick={() => handleModuleChange(module.id)}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group ${isActive
-                      ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20"
-                      : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
+                    ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20"
+                    : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
                     }`}
                 >
                   <div className="flex items-center gap-3">
@@ -1463,8 +1463,8 @@ export default function AdminDashboard() {
                   {module.count > 0 && (
                     <span
                       className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${isActive
-                          ? "bg-primary text-white"
-                          : "bg-neutral-100 text-neutral-400"
+                        ? "bg-primary text-white"
+                        : "bg-neutral-100 text-neutral-400"
                         }`}
                     >
                       {module.count}
@@ -1488,8 +1488,8 @@ export default function AdminDashboard() {
                   key={module.id}
                   onClick={() => handleModuleChange(module.id)}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group ${isActive
-                      ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20"
-                      : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
+                    ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20"
+                    : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
                     }`}
                 >
                   <div className="flex items-center gap-3">
@@ -1510,8 +1510,8 @@ export default function AdminDashboard() {
                   {module.count > 0 && (
                     <span
                       className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${isActive
-                          ? "bg-primary text-white"
-                          : "bg-neutral-100 text-neutral-400"
+                        ? "bg-primary text-white"
+                        : "bg-neutral-100 text-neutral-400"
                         }`}
                     >
                       {module.count}
@@ -1599,8 +1599,8 @@ export default function AdminDashboard() {
                 key={module.id}
                 onClick={() => handleModuleChange(module.id)}
                 className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all ${isActive
-                    ? "bg-primary text-white shadow-md"
-                    : "bg-white text-neutral-500 border border-neutral-200"
+                  ? "bg-primary text-white shadow-md"
+                  : "bg-white text-neutral-500 border border-neutral-200"
                   }`}
               >
                 <Icon size={14} />
@@ -1617,8 +1617,8 @@ export default function AdminDashboard() {
                 key={module.id}
                 onClick={() => handleModuleChange(module.id)}
                 className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all ${isActive
-                    ? "bg-primary text-white shadow-md"
-                    : "bg-white text-neutral-500 border border-neutral-200"
+                  ? "bg-primary text-white shadow-md"
+                  : "bg-white text-neutral-500 border border-neutral-200"
                   }`}
               >
                 <Icon size={14} />
@@ -1635,8 +1635,8 @@ export default function AdminDashboard() {
                 key={module.id}
                 onClick={() => handleModuleChange(module.id)}
                 className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all ${isActive
-                    ? "bg-primary text-white shadow-md"
-                    : "bg-white text-neutral-500 border border-neutral-200"
+                  ? "bg-primary text-white shadow-md"
+                  : "bg-white text-neutral-500 border border-neutral-200"
                   }`}
               >
                 <Icon size={14} />
@@ -2018,8 +2018,8 @@ export default function AdminDashboard() {
                             <td className="py-5 px-6">
                               <span
                                 className={`inline-flex items-center px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${book.status === "borrowed"
-                                    ? "bg-amber-100 text-amber-700 ring-1 ring-amber-200"
-                                    : "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200 shadow-sm shadow-emerald-100"
+                                  ? "bg-amber-100 text-amber-700 ring-1 ring-amber-200"
+                                  : "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200 shadow-sm shadow-emerald-100"
                                   }`}
                               >
                                 {book.status}
@@ -2273,10 +2273,10 @@ export default function AdminDashboard() {
                             <td className="py-5 px-6">
                               <span
                                 className={`inline-flex items-center px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${card.status === "approved"
-                                    ? "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200"
-                                    : card.status === "rejected"
-                                      ? "bg-rose-100 text-rose-700 ring-1 ring-rose-200"
-                                      : "bg-amber-100 text-amber-700 ring-1 ring-amber-200 animate-pulse"
+                                  ? "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200"
+                                  : card.status === "rejected"
+                                    ? "bg-rose-100 text-rose-700 ring-1 ring-rose-200"
+                                    : "bg-amber-100 text-amber-700 ring-1 ring-amber-200 animate-pulse"
                                   }`}
                               >
                                 {card.status || "pending"}
@@ -2467,10 +2467,10 @@ export default function AdminDashboard() {
                               <div className="flex items-center gap-3">
                                 <div
                                   className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${user.type === "admin"
-                                      ? "bg-neutral-900 text-white"
-                                      : user.type === "student"
-                                        ? "bg-primary/10 text-primary"
-                                        : "bg-neutral-100 text-neutral-500"
+                                    ? "bg-neutral-900 text-white"
+                                    : user.type === "student"
+                                      ? "bg-primary/10 text-primary"
+                                      : "bg-neutral-100 text-neutral-500"
                                     }`}
                                 >
                                   {(
@@ -2515,10 +2515,10 @@ export default function AdminDashboard() {
                             <td className="py-5 px-6">
                               <Badge
                                 className={`rounded-lg border-none font-bold text-[10px] uppercase px-3 py-1 ${user.type === "admin"
-                                    ? "bg-neutral-900 text-white"
-                                    : user.type === "student"
-                                      ? "bg-primary/10 text-primary"
-                                      : "bg-blue-100 text-blue-700"
+                                  ? "bg-neutral-900 text-white"
+                                  : user.type === "student"
+                                    ? "bg-primary/10 text-primary"
+                                    : "bg-blue-100 text-blue-700"
                                   }`}
                               >
                                 {user.role ||

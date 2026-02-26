@@ -41,16 +41,24 @@ async function buildSessionStore(): Promise<session.Store> {
       const PgSession = connectPgSimple(session);
 
       if (!cachedPool) {
+        log("Initializing conservative Postgres pool for serverless...", "session");
         cachedPool = new pg.Pool({
           connectionString: process.env.DATABASE_URL,
           ssl: { rejectUnauthorized: false },
-          max: 10, // Limit connections per serverless instance
+          max: 5, // Increase to 5 to allow some concurrency
           idleTimeoutMillis: 30000,
-          connectionTimeoutMillis: 5000,
+          connectionTimeoutMillis: 15000,
         });
+
+        cachedPool.on("error", (err: any) => {
+          log(`Unexpected pool error: ${err.message}`, "error");
+          cachedPool = null; // Forces recreation on next request
+          cachedStore = null;
+        });
+
         // Verify connection immediately
         await cachedPool.query("SELECT 1");
-        log("New Postgres connection pool created and verified.", "session");
+        log("Postgres pooling stable.", "session");
       }
 
       cachedStore = new PgSession({
@@ -117,28 +125,38 @@ async function initServerlessApp() {
   // Note: We don't set initialized=true here yet to allow retries on failure
 
   const store = await buildSessionStore();
+
+  // Important: Explicitly set the store in the app context
+  app.set('sessionStore', store);
+
   app.use(
     session({
-      name: "gcfm.sid", // Custom cookie name
-      proxy: true, // Trust Vercel proxy headers
+      name: "gcfm.sid",
+      proxy: true,
       cookie: {
         maxAge: 86400000,
-        secure: isProduction,
+        secure: true, // Always true for production Vercel
         httpOnly: true,
         sameSite: "lax",
       },
       store,
-      resave: true,
-      rolling: true,
+      resave: true, // Revert to true for serverless persistence
       saveUninitialized: false,
+      rolling: true,
       secret: process.env.SESSION_SECRET || "gcfm-library-secret-2026",
     }),
   );
 
-  // Debug session middleware
+  // Diagnostic middleware for authorization tracking
   app.use((req, res, next) => {
     if (req.path.startsWith("/api/auth/me")) {
-      log(`Session ID: ${req.sessionID}, User: ${req.session?.userId}, Admin: ${req.session?.isAdmin}`, "session-debug");
+      const authInfo = {
+        hasSession: !!req.session,
+        id: req.sessionID,
+        user: req.session?.userId,
+        isAdmin: req.session?.isAdmin
+      };
+      log(`[AUTH-DIAG] ${JSON.stringify(authInfo)}`, "session");
     }
     next();
   });
