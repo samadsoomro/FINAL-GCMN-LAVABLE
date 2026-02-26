@@ -198,11 +198,11 @@ class DbStorage {
 
     if (!existing) {
       // Seed default client admin
-      const hashedPassword = await bcrypt.hash("Admin@12345", 10);
+      const hashedPassword = await bcrypt.hash("dj", 10);
       const { error } = await client
         .from("admin_credentials")
         .insert({
-          admin_email: "admin@cms-college.local",
+          admin_email: "admin@dj.com",
           password_hash: hashedPassword,
           secret_key: "CMS-CORE-SECURE-2026",
           role: "client_admin",
