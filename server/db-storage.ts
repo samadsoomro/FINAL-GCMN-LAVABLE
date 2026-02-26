@@ -1519,12 +1519,24 @@ class DbStorage {
   }
 
   async getFacultyMember(id: string) {
-    const { data } = await supabase
-      .from("faculty_staff")
-      .select(FACULTY_SELECT)
-      .eq("id", id)
-      .maybeSingle();
-    return data;
+    try {
+      const data = await sbFetch(`faculty_staff?id=eq.${id}&limit=1`, {
+        headers: { 'Accept': 'application/vnd.pgrst.object+json' }
+      });
+      if (!data) return null;
+      return {
+        id: data.id,
+        name: data.name,
+        designation: data.designation,
+        description: data.description,
+        imageUrl: data.image_url,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      };
+    } catch (err) {
+      console.error("[db-storage] getFacultyMember error:", err);
+      return null;
+    }
   }
 
   async createFacultyMember(member: any) {
@@ -1566,7 +1578,7 @@ class DbStorage {
     } catch (err) {
       console.warn("getHomeContent failed, using defaults:", err);
       return {
-        heroHeading: "DJ GOV. SCIENCE COLLEGE",
+        heroHeading: "Government College For Men Nazimabad",
         heroSubheading: "Access thousands of books, research papers, and digital resources to fuel your academic journey.",
         heroOverlayText: "Welcome to Digital Learning",
         featuresHeading: "Why Choose Our Digital Library?",
