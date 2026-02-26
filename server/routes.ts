@@ -266,7 +266,12 @@ export function registerRoutes(app: Express): void {
 
       res.json({ user: { id: user.id, email: user.email } });
     } catch (error: any) {
-      res.status(400).json({ error: error.message });
+      console.error("[Login Error]:", error);
+      res.status(500).json({
+        success: false,
+        message: "Internal server error",
+        error: error.message || "Internal server error"
+      });
     }
   });
 

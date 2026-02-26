@@ -43,7 +43,7 @@ async function buildSessionStore(): Promise<session.Store> {
       // but don't block too long. connect-pg-simple will handle its own queries.
       const store = new PgSession({
         pool,
-        createTableIfMissing: true,
+        createTableIfMissing: false, // Prevents blocking query on Vercel cold starts
         tableName: "sessions",
         schemaName: "public"
       });

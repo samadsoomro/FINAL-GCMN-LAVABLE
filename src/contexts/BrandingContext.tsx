@@ -83,7 +83,7 @@ const defaultSettings: SiteSettings = {
   cardLogoUrl:
     "https://okxbrjdtqukxsumksexf.supabase.co/storage/v1/object/public/branding/1769846074511-358185530-Gsindh_Logo.png",
   cardQrEnabled: true,
-  cardQrUrl: "http://localhost:5001/",
+  cardQrUrl: "https://gcmn-formen.vercel.app/",
   cardTermsText:
     "• Login using your Library Card ID\n• Use the password created at the time of application.\n• Your library card will work only after approval by the library administration.",
   cardContactAddress: "Karachi, Pakistan",
