@@ -127,10 +127,8 @@ export async function initApp() {
   return app;
 }
 
-// Only start the HTTP server when NOT running on Vercel/Netlify
-// Note: process.env.NETLIFY is not always reliably "true" in some runtime versions, 
-// so we also check for other platform-specific env vars like SITE_ID.
-const isServerless = !!process.env.VERCEL || !!process.env.NETLIFY || !!process.env.SITE_ID || !!process.env.CONTEXT;
+// Only start the HTTP server when NOT running on Vercel
+const isServerless = !!process.env.VERCEL;
 if (!isServerless) {
   (async () => {
     const application = await initApp();
