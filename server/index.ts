@@ -124,6 +124,12 @@ export async function initApp() {
   const uploadDir = path.join(process.cwd(), "server", "uploads");
   app.use("/server/uploads", express.static(uploadDir));
 
+  // Vercel / Production static fallback
+  if (process.env.NODE_ENV !== "development" || !!process.env.VERCEL) {
+    const { serveStatic } = await import("./vite");
+    serveStatic(app);
+  }
+
   return app;
 }
 
@@ -140,9 +146,6 @@ if (!isServerless) {
     if (application.get("env") === "development") {
       const { setupVite } = await import("./vite");
       await setupVite(application, server);
-    } else {
-      const { serveStatic } = await import("./vite");
-      serveStatic(application);
     }
 
     const port = parseInt(process.env.PORT || "5000", 10);
