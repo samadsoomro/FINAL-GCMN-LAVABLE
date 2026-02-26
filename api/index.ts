@@ -19,44 +19,61 @@ app.set("trust proxy", 1);
 
 const isProduction = process.env.NODE_ENV === "production";
 
-// Build the session store:
+// Global cache for singleton instances in serverless environment
+let cachedPool: any = null;
+let cachedStore: session.Store | null = null;
 // - Production (Vercel): use connect-pg-simple with Supabase Postgres
 // - Development: use memorystore
+// Build the session store:
 async function buildSessionStore(): Promise<session.Store> {
   const DEFAULT_MEMORY_STORE_PERIOD = 86400000;
 
+  if (cachedStore) {
+    log("Using cached session store instance.", "session");
+    return cachedStore;
+  }
+
   try {
-    if (isProduction && process.env.DATABASE_URL) {
+    if (process.env.DATABASE_URL) {
       log("Attempting to initialize Postgres session store...", "session");
       const { default: connectPgSimple } = await import("connect-pg-simple");
       const { default: pg } = await import("pg");
       const PgSession = connectPgSimple(session);
-      const pool = new pg.Pool({
-        connectionString: process.env.DATABASE_URL,
-        ssl: { rejectUnauthorized: false }
-      });
 
-      // Verify connection immediately
-      await pool.query("SELECT 1");
-      log("Postgres connection verified for session store.", "session");
+      if (!cachedPool) {
+        cachedPool = new pg.Pool({
+          connectionString: process.env.DATABASE_URL,
+          ssl: { rejectUnauthorized: false },
+          max: 10, // Limit connections per serverless instance
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 5000,
+        });
+        // Verify connection immediately
+        await cachedPool.query("SELECT 1");
+        log("New Postgres connection pool created and verified.", "session");
+      }
 
-      const store = new PgSession({
-        pool,
+      cachedStore = new PgSession({
+        pool: cachedPool,
         createTableIfMissing: true,
         tableName: "sessions",
         schemaName: "public"
       });
 
       log("Postgres session store instance created.", "session");
-      return store;
+      return cachedStore;
     }
   } catch (err: any) {
-    log(`Postgres session store failed: ${err.message}. Falling back to MemoryStore.`, "session");
+    log(`Postgres session store failed: ${err.message}`, "session");
+    if (isProduction) {
+      throw new Error(`Critical: Postgres session store failed in production: ${err.message}`);
+    }
   }
 
-  log("Using MemoryStore for sessions.", "session");
+  log("Using MemoryStore for sessions (Non-Production fallback).", "session");
   const MemoryStore = (await import("memorystore")).default(session);
-  return new MemoryStore({ checkPeriod: DEFAULT_MEMORY_STORE_PERIOD });
+  cachedStore = new MemoryStore({ checkPeriod: DEFAULT_MEMORY_STORE_PERIOD });
+  return cachedStore;
 }
 
 app.use((req, res, next) => {
@@ -72,8 +89,13 @@ app.use((req, res, next) => {
 
   res.on("finish", () => {
     const duration = Date.now() - start;
+
+    // Diagnostic headers
+    res.setHeader("X-Store-Type", cachedPool ? "postgres" : "memory");
+    res.setHeader("X-Vercel-Initialized", initialized ? "true" : "false");
+
     if (reqPath.startsWith("/api")) {
-      let logLine = `${req.method} ${reqPath} ${res.statusCode} in ${duration}ms`;
+      let logLine = `${req.method} ${reqPath} ${res.statusCode} in ${duration}ms [Store: ${cachedPool ? "PG" : "MEM"}]`;
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
@@ -97,15 +119,17 @@ async function initServerlessApp() {
   const store = await buildSessionStore();
   app.use(
     session({
+      name: "gcfm.sid", // Custom cookie name
+      proxy: true, // Trust Vercel proxy headers
       cookie: {
         maxAge: 86400000,
         secure: isProduction,
         httpOnly: true,
-        sameSite: isProduction ? "lax" : "lax", // Lax is more compatible for direct subdomain access
+        sameSite: "lax",
       },
       store,
-      resave: true, // Required for persistent serverless sessions
-      rolling: true, // Refresh cookie on every request
+      resave: true,
+      rolling: true,
       saveUninitialized: false,
       secret: process.env.SESSION_SECRET || "gcfm-library-secret-2026",
     }),
